@@ -6,7 +6,10 @@ const app = express();
 
 // Enable CORS for cross-origin requests
 app.use(cors({
-    origin: ['https://www.squareyards.com', 'https://stage-www.squareyards.com', 'https://redesign-v2.squareyards.com'],
+    origin: ['https://www.squareyards.com',
+         'https://stage-www.squareyards.com',
+          'https://redesign-v2.squareyards.com',
+        'http://127.0.0.1:5501'],
     methods: ['GET'],
 }));
 
@@ -32,18 +35,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
 });
-
-
-// const express = require('express');
-// const path = require('path');
-// const app = express();
-
-// // Serve static files from the 'public' directory
-// app.use(express.static(path.join(__dirname, 'public')));
-
-// // Define the port (use Render's PORT environment variable or default to 3000)
-// const PORT = process.env.PORT || 3000;
-
-// app.listen(PORT, () => {
-//     console.log(`Server started on port ${PORT}`);
-// });
