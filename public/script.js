@@ -1,5 +1,6 @@
 console.log('script.js loaded successfully');
 
+
 function injectChatbotStyles() {
     const css = `
         
@@ -653,15 +654,65 @@ const popupMessages = [
 ];
 
 
-// DOM Elements
-const chatbotIcon = document.querySelector('#chatbot-icon');
-const chatbotPopup = document.querySelector('.chatbot-popup');
-const chatbotWindow = document.querySelector('#chatbot-window');
-const chatbotBodyDiv = document.querySelector('#chatbot-body');
-const chatbotInputDiv = document.querySelector('#chatbot-input');
-// const closeBtn = document.querySelector('.close-btn');
-const themeToggleBtn = document.querySelector('.theme-toggle');
-// const animationToggleBtn = document.querySelector('.animation-toggle');
+// / DOM Elements (move inside initializePropertyListingChatbot)
+function initializePropertyListingChatbot() {
+    // Inject styles
+    console.log('initializePropertyListingChatbot called');
+    injectChatbotStyles();
+
+    // DOM Elements
+    const chatbotIcon = document.querySelector('#chatbot-icon');
+    const chatbotPopup = document.querySelector('.chatbot-popup');
+    const chatbotWindow = document.querySelector('#chatbot-window');
+    const chatbotBodyDiv = document.querySelector('#chatbot-body');
+    const chatbotInputDiv = document.querySelector('#chatbot-input');
+    const themeToggleBtn = document.querySelector('.theme-toggle');
+
+    // Null checks
+    if (!chatbotIcon || !chatbotPopup || !chatbotWindow || !chatbotBodyDiv || !chatbotInputDiv || !themeToggleBtn) {
+        console.error('Missing DOM elements:', {
+            chatbotIcon, chatbotPopup, chatbotWindow, chatbotBodyDiv, chatbotInputDiv, themeToggleBtn
+        });
+        return;
+    }
+
+    // Initialize state
+    chatbotIcon.classList.add('closed');
+    startPopupInterval();
+
+    // Event Listeners
+    themeToggleBtn.addEventListener('click', () => {
+        const isDarkMode = chatbotWindow.classList.toggle('dark-mode');
+        chatbotBodyDiv.classList.toggle('dark-mode');
+        chatbotInputDiv.classList.toggle('dark-mode');
+        themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
+        document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
+            item.classList.toggle('dark-mode', isDarkMode);
+        });
+    });
+
+    chatbotIcon.addEventListener('click', () => toggleChatbot());
+    chatbotIcon.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleChatbot();
+        }
+    });
+
+    chatbotPopup.addEventListener('click', () => toggleChatbot());
+    chatbotPopup.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleChatbot();
+        }
+    });
+
+    // Start chat if needed
+    if (!state.hasStarted) {
+        startChat();
+        state.hasStarted = true;
+    }
+}
 
 // Utility Functions
 function debounce(func, wait) {
@@ -1716,36 +1767,36 @@ function clearChat() {
     startChat();
 }
 
-function initializePropertyListingChatbot() {
-    console.log('initializePropertyListingChatbot called');
-    injectChatbotStyles();
-    chatbotIcon.classList.add('closed');
-    startPopupInterval();
-    // Add event listeners and initialize the chatbot
-    themeToggleBtn.addEventListener('click', () => {
-        const isDarkMode = chatbotWindow.classList.toggle('dark-mode');
-        chatbotBodyDiv.classList.toggle('dark-mode');
-        chatbotInputDiv.classList.toggle('dark-mode');
-        themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
-        document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
-            item.classList.toggle('dark-mode', isDarkMode);
-        });
-    });
-    chatbotIcon.addEventListener('click', () => toggleChatbot());
-    chatbotIcon.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleChatbot();
-        }
-    });
-    chatbotPopup.addEventListener('click', () => toggleChatbot());
-    chatbotPopup.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleChatbot();
-        }
-    });
-}
+// function initializePropertyListingChatbot() {
+//     console.log('initializePropertyListingChatbot called');
+//     injectChatbotStyles();
+//     chatbotIcon.classList.add('closed');
+//     startPopupInterval();
+//     // Add event listeners and initialize the chatbot
+//     themeToggleBtn.addEventListener('click', () => {
+//         const isDarkMode = chatbotWindow.classList.toggle('dark-mode');
+//         chatbotBodyDiv.classList.toggle('dark-mode');
+//         chatbotInputDiv.classList.toggle('dark-mode');
+//         themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
+//         document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
+//             item.classList.toggle('dark-mode', isDarkMode);
+//         });
+//     });
+//     chatbotIcon.addEventListener('click', () => toggleChatbot());
+//     chatbotIcon.addEventListener('keydown', (e) => {
+//         if (e.key === 'Enter' || e.key === ' ') {
+//             e.preventDefault();
+//             toggleChatbot();
+//         }
+//     });
+//     chatbotPopup.addEventListener('click', () => toggleChatbot());
+//     chatbotPopup.addEventListener('keydown', (e) => {
+//         if (e.key === 'Enter' || e.key === ' ') {
+//             e.preventDefault();
+//             toggleChatbot();
+//         }
+//     });
+// }
 
 export { initializePropertyListingChatbot };
 window.initializePropertyListingChatbot = initializePropertyListingChatbot;
