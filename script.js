@@ -1745,3 +1745,5 @@ function initializePropertyListingChatbot() {
 }
 
 export { initializePropertyListingChatbot };
+// Make globally accessible
+window.initializePropertyListingChatbot = initializePropertyListingChatbot;
