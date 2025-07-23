@@ -1,3 +1,5 @@
+console.log('script.js loaded successfully');
+
 function injectChatbotStyles() {
     const css = `
         
@@ -1715,6 +1717,7 @@ function clearChat() {
 }
 
 function initializePropertyListingChatbot() {
+    console.log('initializePropertyListingChatbot called');
     injectChatbotStyles();
     chatbotIcon.classList.add('closed');
     startPopupInterval();
@@ -1745,3 +1748,4 @@ function initializePropertyListingChatbot() {
 }
 
 export { initializePropertyListingChatbot };
+window.initializePropertyListingChatbot = initializePropertyListingChatbot;
