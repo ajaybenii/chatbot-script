@@ -6,10 +6,7 @@ const app = express();
 
 // Enable CORS for cross-origin requests
 app.use(cors({
-    origin: ['https://www.squareyards.com',
-         'https://stage-www.squareyards.com',
-          'https://redesign-v2.squareyards.com',
-        'http://127.0.0.1:5501'],
+    origin: '*',
     methods: ['GET'],
 }));
 
