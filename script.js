@@ -1,5 +1,104 @@
 console.log('script.js loaded successfully');
 
+const steps = [
+    {
+        message: 'Are you the property owner or an agent? 🧑‍💼',
+        input: 'buttons',
+        options: ['Owner', 'Agent'],
+        field: 'userType',
+        reminder: '⏳ Are you still there? Please choose if you’re an owner or agent.'
+    },
+    {
+        message: '🏠 Is the property for sale or rent? 💸',
+        input: 'buttons',
+        options: ['Sale', 'Rent'],
+        field: 'listingType',
+        reminder: '⏳ Are you still there? Please select if the property is for sale or rent.'
+    },
+    {
+        message: '📍 Which city is your property in? 🌆 (Please select from the dropdown)',
+        input: 'text',
+        placeholder: 'Type and select a city (e.g., Mumbai)',
+        field: 'city',
+        validate: (value) => {
+            if (value.trim().length === 0) {
+                return 'Please enter a valid city.';
+            }
+            if (!cityList.some(city => city.name === value)) {
+                return 'Please select a city from the dropdown list.';
+            }
+            return '';
+        },
+        reminder: '⏳ Are you still there? Please select your city from the dropdown.'
+    },
+    {
+        message: '✨ To list your property quickly and hassle-free, our expert agent is ready to assist you personally! Please share your name. 📝',
+        input: 'text',
+        placeholder: 'Enter your full name',
+        field: 'name',
+        validate: (value) => {
+            if (!/^[a-zA-Z\s]{1,20}$/.test(value)) {
+                return 'Please enter a valid name (only letters, max 20 characters).';
+            }
+            return '';
+        },
+        reminder: '⏳ Are you still there? Please share your name.'
+    },
+    {
+        message: '📞 Please enter your 10-digit phone number to receive an OTP for verification. 🔒 Your data is secure.',
+        input: 'text',
+        placeholder: 'Enter 10-digit phone number',
+        field: 'number',
+        validate: (value) => /^[0-9]{10}$/.test(value) ? '' : 'Please enter a valid 10-digit phone number.',
+        reminder: '⏳ Are you still there? Please enter your phone number.'
+    },
+    {
+            message: ' Please enter the 4-digit OTP sent to your phone number.',
+            input: 'otp',
+            placeholder: 'Enter OTP',
+            field: 'otp',
+            validate: (value) => /^[0-9]{4}$/.test(value) ? '' : 'Please enter a valid 4-digit OTP.',
+            reminder: ' Are you still there? Please enter the OTP.'
+        }
+
+
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded, initializing chatbot');
+
+    // Dynamically query DOM elements
+    const chatbotIcon = document.querySelector('#chatbot-icon');
+    const chatbotPopup = document.querySelector('.chatbot-popup');
+    const chatbotWindow = document.querySelector('#chatbot-window');
+    const chatbotBodyDiv = document.querySelector('#chatbot-body');
+    const chatbotInputDiv = document.querySelector('#chatbot-input');
+    // const themeToggleBtn = document.querySelector('.theme-toggle');
+
+    // Check if required elements exist
+    if (!chatbotIcon || !chatbotPopup || !chatbotWindow || !chatbotBodyDiv || !chatbotInputDiv ) {
+        console.error('One or more required chatbot elements not found:', {
+            chatbotIcon, chatbotPopup, chatbotWindow, chatbotBodyDiv, chatbotInputDiv
+        });
+        if (chatbotBodyDiv) {
+            chatbotBodyDiv.innerHTML = '<div class="message bot-message">Error: Required chatbot elements not found. Please ensure the HTML structure is correct.</div>';
+        }
+        return;
+    }
+
+    // Assign to global variables (if needed by other functions)
+    window.chatbotIcon = chatbotIcon;
+    window.chatbotPopup = chatbotPopup;
+    window.chatbotWindow = chatbotWindow;
+    window.chatbotBodyDiv = chatbotBodyDiv;
+    window.chatbotInputDiv = chatbotInputDiv;
+    // window.themeToggleBtn = themeToggleBtn;
+
+    // Inject styles and initialize
+    injectChatbotStyles();
+    initializePropertyListingChatbot();
+});
+
 function injectChatbotStyles() {
     const css = `
         
@@ -653,64 +752,43 @@ const popupMessages = [
 ];
 
 
-// / DOM Elements (move inside initializePropertyListingChatbot)
-function initializePropertyListingChatbot() {
-    // Inject styles
-    injectChatbotStyles();
+// DOM Elements
+// Move DOM initialization inside DOMContentLoaded
+// document.addEventListener('DOMContentLoaded', () => {
+//     console.log('DOM fully loaded, initializing chatbot');
 
-    // DOM Elements
-    const chatbotIcon = document.querySelector('#chatbot-icon');
-    const chatbotPopup = document.querySelector('.chatbot-popup');
-    const chatbotWindow = document.querySelector('#chatbot-window');
-    const chatbotBodyDiv = document.querySelector('#chatbot-body');
-    const chatbotInputDiv = document.querySelector('#chatbot-input');
-    const themeToggleBtn = document.querySelector('.theme-toggle');
+//     // Dynamically query DOM elements
+//     const chatbotIcon = document.querySelector('#chatbot-icon');
+//     const chatbotPopup = document.querySelector('.chatbot-popup');
+//     const chatbotWindow = document.querySelector('#chatbot-window');
+//     const chatbotBodyDiv = document.querySelector('#chatbot-body');
+//     const chatbotInputDiv = document.querySelector('#chatbot-input');
+//     const themeToggleBtn = document.querySelector('.theme-toggle');
 
-    // Null checks
-    if (!chatbotIcon || !chatbotPopup || !chatbotWindow || !chatbotBodyDiv || !chatbotInputDiv || !themeToggleBtn) {
-        console.error('Missing DOM elements:', {
-            chatbotIcon, chatbotPopup, chatbotWindow, chatbotBodyDiv, chatbotInputDiv, themeToggleBtn
-        });
-        return;
-    }
+//     // Check if required elements exist
+//     if (!chatbotIcon || !chatbotPopup || !chatbotWindow || !chatbotBodyDiv || !chatbotInputDiv || !themeToggleBtn) {
+//         console.error('One or more required chatbot elements not found:', {
+//             chatbotIcon, chatbotPopup, chatbotWindow, chatbotBodyDiv, chatbotInputDiv, themeToggleBtn
+//         });
+//         if (chatbotBodyDiv) {
+//             chatbotBodyDiv.innerHTML = '<div class="message bot-message">Error: Required chatbot elements not found. Please ensure the HTML structure is correct.</div>';
+//         }
+//         return;
+//     }
 
-    // Initialize state
-    chatbotIcon.classList.add('closed');
-    startPopupInterval();
+//     // Assign to global variables (if needed by other functions)
+//     window.chatbotIcon = chatbotIcon;
+//     window.chatbotPopup = chatbotPopup;
+//     window.chatbotWindow = chatbotWindow;
+//     window.chatbotBodyDiv = chatbotBodyDiv;
+//     window.chatbotInputDiv = chatbotInputDiv;
+//     window.themeToggleBtn = themeToggleBtn;
 
-    // Event Listeners
-    themeToggleBtn.addEventListener('click', () => {
-        const isDarkMode = chatbotWindow.classList.toggle('dark-mode');
-        chatbotBodyDiv.classList.toggle('dark-mode');
-        chatbotInputDiv.classList.toggle('dark-mode');
-        themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
-        document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
-            item.classList.toggle('dark-mode', isDarkMode);
-        });
-    });
+//     // Inject styles and initialize
+//     injectChatbotStyles();
+//     initializePropertyListingChatbot();
+// });
 
-    chatbotIcon.addEventListener('click', () => toggleChatbot());
-    chatbotIcon.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleChatbot();
-        }
-    });
-
-    chatbotPopup.addEventListener('click', () => toggleChatbot());
-    chatbotPopup.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleChatbot();
-        }
-    });
-
-    // Start chat if needed
-    if (!state.hasStarted) {
-        startChat();
-        state.hasStarted = true;
-    }
-}
 
 // Utility Functions
 function debounce(func, wait) {
@@ -753,16 +831,16 @@ function stopPopupInterval() {
     chatbotPopup.setAttribute('aria-hidden', 'true');
 }
 
-// Event Listeners
-themeToggleBtn.addEventListener('click', () => {
-    const isDarkMode = chatbotWindow.classList.toggle('dark-mode');
-    chatbotBodyDiv.classList.toggle('dark-mode');
-    chatbotInputDiv.classList.toggle('dark-mode');
-    themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
-    document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
-        item.classList.toggle('dark-mode', isDarkMode);
-    });
-});
+// // Event Listeners
+// themeToggleBtn.addEventListener('click', () => {
+//     const isDarkMode = chatbotWindow.classList.toggle('dark-mode');
+//     chatbotBodyDiv.classList.toggle('dark-mode');
+//     chatbotInputDiv.classList.toggle('dark-mode');
+//     themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
+//     document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
+//         item.classList.toggle('dark-mode', isDarkMode);
+//     });
+// });
 
 // animationToggleBtn.addEventListener('click', () => {
 //     const currentIndex = animationStyles.indexOf(currentAnimationStyle);
@@ -772,21 +850,21 @@ themeToggleBtn.addEventListener('click', () => {
 //     setTimeout(removeTypingIndicator, 1000);
 // });
 
-chatbotIcon.addEventListener('click', () => toggleChatbot());
-chatbotIcon.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleChatbot();
-    }
-});
+// chatbotIcon.addEventListener('click', () => toggleChatbot());
+// chatbotIcon.addEventListener('keydown', (e) => {
+//     if (e.key === 'Enter' || e.key === ' ') {
+//         e.preventDefault();
+//         toggleChatbot();
+//     }
+// });
 
-chatbotPopup.addEventListener('click', () => toggleChatbot());
-chatbotPopup.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleChatbot();
-    }
-});
+// chatbotPopup.addEventListener('click', () => toggleChatbot());
+// chatbotPopup.addEventListener('keydown', (e) => {
+//     if (e.key === 'Enter' || e.key === ' ') {
+//         e.preventDefault();
+//         toggleChatbot();
+//     }
+// });
 
 // closeBtn.addEventListener('click', () => {
 //     chatbotWindow.style.display = 'none';
@@ -800,13 +878,29 @@ chatbotPopup.addEventListener('keydown', (e) => {
 // });
 
 // API Functions
+// At the top of script.js, before fetchCityList
+// cityList = [
+//     { name: 'Mumbai', id: '1' },
+//     { name: 'Delhi', id: '2' },
+//     { name: 'Bangalore', id: '3' }
+// ];
+// // let cityListFetched = true; // Set to true to skip the API call
+
+// // Override the fetchCityList function
+// async function fetchCityList() {
+//     console.log('Using mock city list for development:', cityList);
+//     // No API call, just log and set fetched flag
+//     cityListFetched = true;
+// }
+
 async function fetchCityList() {
     try {
         const response = await fetch('https://beats.squareyards.com/api/SecondaryPortal/getCityList', {
             method: 'POST',
             headers: {
                 'api_key': 'uAqGJ6bvNqcqsxh4TXMRHP596adeEMLVomMZywp1U0VHUeHLwHxv5jbe5Aw8',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Origin': 'http://127.0.0.1:5501'
             },
             body: JSON.stringify({
                 fromSource: 'whatsapp',
@@ -941,6 +1035,7 @@ chatbotIcon.classList.add('closed');
 startPopupInterval();
 
 function toggleChatbot() {
+    console.log('Toggle chatbot clicked');
     const isWindowOpen = chatbotWindow.classList.contains('open');
     if (isWindowOpen) {
         chatbotWindow.style.display = 'none';
@@ -964,81 +1059,96 @@ function toggleChatbot() {
     }
 }
 
+// async function startChat() {
+//         addBotMessage('👋 Hi! Let’s list your property on SquareYards. 🚀');
+//         if (!cityListFetched) {
+//             fetchCityList().then(() => {
+//                 cityListFetched = true;
+//             });
+//         }
+//         showStep(0);
+//     }
 async function startChat() {
-        addBotMessage('👋 Hi! Let’s list your property on SquareYards. 🚀');
-        if (!cityListFetched) {
-            fetchCityList().then(() => {
-                cityListFetched = true;
-            });
+    addBotMessage('👋 Hi! Let’s list your property on SquareYards. 🚀');
+    showStep(0); // Show the first step immediately
+
+    // Fetch city list in the background
+    if (!cityListFetched) {
+        try {
+            await fetchCityList();
+            console.log('City list fetched successfully');
+        } catch (error) {
+            console.warn('City list fetch failed, proceeding without it:', error);
+            addBotMessage('City list unavailable. Please proceed with manual input if needed.');
         }
-        showStep(0);
     }
+}
 
 
 
-const steps = [
-    {
-        message: 'Are you the property owner or an agent? 🧑‍💼',
-        input: 'buttons',
-        options: ['Owner', 'Agent'],
-        field: 'userType',
-        reminder: '⏳ Are you still there? Please choose if you’re an owner or agent.'
-    },
-    {
-        message: '🏠 Is the property for sale or rent? 💸',
-        input: 'buttons',
-        options: ['Sale', 'Rent'],
-        field: 'listingType',
-        reminder: '⏳ Are you still there? Please select if the property is for sale or rent.'
-    },
-    {
-        message: '📍 Which city is your property in? 🌆 (Please select from the dropdown)',
-        input: 'text',
-        placeholder: 'Type and select a city (e.g., Mumbai)',
-        field: 'city',
-        validate: (value) => {
-            if (value.trim().length === 0) {
-                return 'Please enter a valid city.';
-            }
-            if (!cityList.some(city => city.name === value)) {
-                return 'Please select a city from the dropdown list.';
-            }
-            return '';
-        },
-        reminder: '⏳ Are you still there? Please select your city from the dropdown.'
-    },
-    {
-        message: '✨ To list your property quickly and hassle-free, our expert agent is ready to assist you personally! Please share your name. 📝',
-        input: 'text',
-        placeholder: 'Enter your full name',
-        field: 'name',
-        validate: (value) => {
-            if (!/^[a-zA-Z\s]{1,20}$/.test(value)) {
-                return 'Please enter a valid name (only letters, max 20 characters).';
-            }
-            return '';
-        },
-        reminder: '⏳ Are you still there? Please share your name.'
-    },
-    {
-        message: '📞 Please enter your 10-digit phone number to receive an OTP for verification. 🔒 Your data is secure.',
-        input: 'text',
-        placeholder: 'Enter 10-digit phone number',
-        field: 'number',
-        validate: (value) => /^[0-9]{10}$/.test(value) ? '' : 'Please enter a valid 10-digit phone number.',
-        reminder: '⏳ Are you still there? Please enter your phone number.'
-    },
-    {
-            message: ' Please enter the 4-digit OTP sent to your phone number.',
-            input: 'otp',
-            placeholder: 'Enter OTP',
-            field: 'otp',
-            validate: (value) => /^[0-9]{4}$/.test(value) ? '' : 'Please enter a valid 4-digit OTP.',
-            reminder: ' Are you still there? Please enter the OTP.'
-        }
+// const steps = [
+//     {
+//         message: 'Are you the property owner or an agent? 🧑‍💼',
+//         input: 'buttons',
+//         options: ['Owner', 'Agent'],
+//         field: 'userType',
+//         reminder: '⏳ Are you still there? Please choose if you’re an owner or agent.'
+//     },
+//     {
+//         message: '🏠 Is the property for sale or rent? 💸',
+//         input: 'buttons',
+//         options: ['Sale', 'Rent'],
+//         field: 'listingType',
+//         reminder: '⏳ Are you still there? Please select if the property is for sale or rent.'
+//     },
+//     {
+//         message: '📍 Which city is your property in? 🌆 (Please select from the dropdown)',
+//         input: 'text',
+//         placeholder: 'Type and select a city (e.g., Mumbai)',
+//         field: 'city',
+//         validate: (value) => {
+//             if (value.trim().length === 0) {
+//                 return 'Please enter a valid city.';
+//             }
+//             if (!cityList.some(city => city.name === value)) {
+//                 return 'Please select a city from the dropdown list.';
+//             }
+//             return '';
+//         },
+//         reminder: '⏳ Are you still there? Please select your city from the dropdown.'
+//     },
+//     {
+//         message: '✨ To list your property quickly and hassle-free, our expert agent is ready to assist you personally! Please share your name. 📝',
+//         input: 'text',
+//         placeholder: 'Enter your full name',
+//         field: 'name',
+//         validate: (value) => {
+//             if (!/^[a-zA-Z\s]{1,20}$/.test(value)) {
+//                 return 'Please enter a valid name (only letters, max 20 characters).';
+//             }
+//             return '';
+//         },
+//         reminder: '⏳ Are you still there? Please share your name.'
+//     },
+//     {
+//         message: '📞 Please enter your 10-digit phone number to receive an OTP for verification. 🔒 Your data is secure.',
+//         input: 'text',
+//         placeholder: 'Enter 10-digit phone number',
+//         field: 'number',
+//         validate: (value) => /^[0-9]{10}$/.test(value) ? '' : 'Please enter a valid 10-digit phone number.',
+//         reminder: '⏳ Are you still there? Please enter your phone number.'
+//     },
+//     {
+//             message: ' Please enter the 4-digit OTP sent to your phone number.',
+//             input: 'otp',
+//             placeholder: 'Enter OTP',
+//             field: 'otp',
+//             validate: (value) => /^[0-9]{4}$/.test(value) ? '' : 'Please enter a valid 4-digit OTP.',
+//             reminder: ' Are you still there? Please enter the OTP.'
+//         }
 
 
-];
+// ];
 
 function showStep(stepIndex) {
     state.step = stepIndex;
@@ -1765,36 +1875,37 @@ function clearChat() {
     startChat();
 }
 
-// function initializePropertyListingChatbot() {
-//     console.log('initializePropertyListingChatbot called');
-//     injectChatbotStyles();
-//     chatbotIcon.classList.add('closed');
-//     startPopupInterval();
-//     // Add event listeners and initialize the chatbot
-//     themeToggleBtn.addEventListener('click', () => {
-//         const isDarkMode = chatbotWindow.classList.toggle('dark-mode');
-//         chatbotBodyDiv.classList.toggle('dark-mode');
-//         chatbotInputDiv.classList.toggle('dark-mode');
-//         themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
-//         document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
-//             item.classList.toggle('dark-mode', isDarkMode);
-//         });
-//     });
-//     chatbotIcon.addEventListener('click', () => toggleChatbot());
-//     chatbotIcon.addEventListener('keydown', (e) => {
-//         if (e.key === 'Enter' || e.key === ' ') {
-//             e.preventDefault();
-//             toggleChatbot();
-//         }
-//     });
-//     chatbotPopup.addEventListener('click', () => toggleChatbot());
-//     chatbotPopup.addEventListener('keydown', (e) => {
-//         if (e.key === 'Enter' || e.key === ' ') {
-//             e.preventDefault();
-//             toggleChatbot();
-//         }
-//     });
-// }
+function initializePropertyListingChatbot() {
+    console.log('initializePropertyListingChatbot called');
+    window.chatbotIcon.classList.add('closed');
+    startPopupInterval();
+
+    // Theme toggle event listener
+    // window.themeToggleBtn.addEventListener('click', () => {
+    //     const isDarkMode = window.chatbotWindow.classList.toggle('dark-mode');
+    //     window.chatbotBodyDiv.classList.toggle('dark-mode');
+    //     window.chatbotInputDiv.classList.toggle('dark-mode');
+    //     window.themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
+    //     document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
+    //         item.classList.toggle('dark-mode', isDarkMode);
+    //     });
+    // });
+
+    window.chatbotIcon.addEventListener('click', toggleChatbot);
+    window.chatbotIcon.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleChatbot();
+        }
+    });
+    window.chatbotPopup.addEventListener('click', toggleChatbot);
+    window.chatbotPopup.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleChatbot();
+        }
+    });
+}
 
 export { initializePropertyListingChatbot };
 window.initializePropertyListingChatbot = initializePropertyListingChatbot;

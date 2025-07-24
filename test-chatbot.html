@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Integration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="chatbot-icon" tabindex="0" role="button" aria-label="Open chatbot"></div>
+    <div class="chatbot-popup" tabindex="0" role="button" aria-hidden="true"></div>
+    <div id="chatbot-window">
+        <div class="chatbot-header">
+            <div class="company-profile">
+                <p>SquareYards</p>
+                <span>Property Listing Assistant</span>
+            </div>
+            <!-- <button class="theme-toggle" aria-label="Toggle theme">🌙</button> -->
+        </div>
+        <div id="chatbot-body" class="chatbot-body"></div>
+        <div id="chatbot-input" class="chatbot-input"></div>
+    </div>
+    <audio id="chatSound" src="https://chatbot-script-server.onrender.com/chatbot-sound.mp3"></audio>
+    <audio id="errorSound" src="https://chatbot-script-server.onrender.com/error.mp3"></audio>
+    <script src="https://chatbot-script-server.onrender.com/script.js" type="module" defer></script>
+</body>
+</html>
