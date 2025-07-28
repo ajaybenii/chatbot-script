@@ -1,4 +1,4 @@
-console.log('script.js loaded successfully');
+//console.log('script.js loaded successfully');
 
 const steps = [
     {
@@ -53,655 +53,812 @@ const steps = [
         reminder: '⏳ Are you still there? Please enter your phone number.'
     },
     {
-            message: ' Please enter the 4-digit OTP sent to your phone number.',
-            input: 'otp',
-            placeholder: 'Enter OTP',
-            field: 'otp',
-            validate: (value) => /^[0-9]{4}$/.test(value) ? '' : 'Please enter a valid 4-digit OTP.',
-            reminder: ' Are you still there? Please enter the OTP.'
-        }
-
-
+        message: ' Please enter the 4-digit OTP sent to your phone number.',
+        input: 'otp',
+        placeholder: 'Enter OTP',
+        field: 'otp',
+        validate: (value) => /^[0-9]{4}$/.test(value) ? '' : 'Please enter a valid 4-digit OTP.',
+        reminder: ' Are you still there? Please enter the OTP.'
+    }
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded, initializing chatbot');
+    // Create DOM elements dynamically
+    createChatbotElements();
 
-    // Dynamically query DOM elements
-    const chatbotIcon = document.querySelector('#chatbot-icon');
-    const chatbotPopup = document.querySelector('.chatbot-popup');
-    const chatbotWindow = document.querySelector('#chatbot-window');
-    const chatbotBodyDiv = document.querySelector('#chatbot-body');
-    const chatbotInputDiv = document.querySelector('#chatbot-input');
-    // const themeToggleBtn = document.querySelector('.theme-toggle');
+    // Inject styles and initialize
+    injectChatbotStyles();
+    initializePropertyListingChatbot();
+    loadConfig();
+});
 
-    // Check if required elements exist
-    if (!chatbotIcon || !chatbotPopup || !chatbotWindow || !chatbotBodyDiv || !chatbotInputDiv ) {
-        console.error('One or more required chatbot elements not found:', {
-            chatbotIcon, chatbotPopup, chatbotWindow, chatbotBodyDiv, chatbotInputDiv
-        });
-        if (chatbotBodyDiv) {
-            chatbotBodyDiv.innerHTML = '<div class="message bot-message">Error: Required chatbot elements not found. Please ensure the HTML structure is correct.</div>';
-        }
-        return;
-    }
+// Function to create chatbot DOM elements
+function createChatbotElements() {
+    // Create chatbot icon
+    const chatbotIcon = document.createElement('div');
+    chatbotIcon.id = 'chatbot-icon';
+    chatbotIcon.setAttribute('tabindex', '0');
+    chatbotIcon.setAttribute('role', 'button');
+    chatbotIcon.setAttribute('aria-label', 'Open chatbot');
+    document.body.appendChild(chatbotIcon);
 
-    // Assign to global variables (if needed by other functions)
+    // Create chatbot popup
+    const chatbotPopup = document.createElement('div');
+    chatbotPopup.className = 'chatbot-popup';
+    chatbotPopup.setAttribute('tabindex', '0');
+    chatbotPopup.setAttribute('role', 'button');
+    chatbotPopup.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(chatbotPopup);
+
+    // Create chatbot window
+    const chatbotWindow = document.createElement('div');
+    chatbotWindow.id = 'chatbot-window';
+    document.body.appendChild(chatbotWindow);
+
+    // Create chatbot header
+    const chatbotHeader = document.createElement('div');
+    chatbotHeader.className = 'chatbot-header';
+    const figure = document.createElement('figure');
+    const botIcon = document.createElement('img');
+    botIcon.className = 'img-responsive';
+    botIcon.src = 'assets/images/bot-icon-white.svg';
+    botIcon.alt = 'SquareYards bot icon';
+    figure.appendChild(botIcon);
+    chatbotHeader.appendChild(figure);
+    const companyProfile = document.createElement('div');
+    companyProfile.className = 'company-profile';
+    companyProfile.innerHTML = `
+        <p>Property Listing Assistant</p>
+        <span class="status">Online</span>
+    `;
+    chatbotHeader.appendChild(companyProfile);
+
+    // Create theme toggle button
+    const themeToggleBtn = document.createElement('button');
+    themeToggleBtn.className = 'theme-toggle';
+    themeToggleBtn.setAttribute('aria-label', 'Toggle theme');
+    themeToggleBtn.textContent = '🌙';
+    chatbotHeader.appendChild(themeToggleBtn);
+
+    chatbotWindow.appendChild(chatbotHeader);
+
+    // Create chatbot body
+    const chatbotBodyDiv = document.createElement('div');
+    chatbotBodyDiv.id = 'chatbot-body';
+    chatbotBodyDiv.className = 'chatbot-body';
+    chatbotWindow.appendChild(chatbotBodyDiv);
+
+    // Create chatbot input
+    const chatbotInputDiv = document.createElement('div');
+    chatbotInputDiv.id = 'chatbot-input';
+    chatbotInputDiv.className = 'chatbot-input';
+    chatbotWindow.appendChild(chatbotInputDiv);
+
+    // Create audio elements
+    const chatSound = document.createElement('audio');
+    chatSound.id = 'chatSound';
+    chatSound.src = 'assets/audio/chatbot-sound.mp3';
+    document.body.appendChild(chatSound);
+
+    const errorSound = document.createElement('audio');
+    errorSound.id = 'errorSound';
+    errorSound.src = 'assets/audio/error.mp3';
+    document.body.appendChild(errorSound);
+
+    // Assign to global variables
     window.chatbotIcon = chatbotIcon;
     window.chatbotPopup = chatbotPopup;
     window.chatbotWindow = chatbotWindow;
     window.chatbotBodyDiv = chatbotBodyDiv;
     window.chatbotInputDiv = chatbotInputDiv;
-    // window.themeToggleBtn = themeToggleBtn;
+    window.themeToggleBtn = themeToggleBtn;
+}
 
-    // Inject styles and initialize
-    injectChatbotStyles();
-    initializePropertyListingChatbot();
-});
+// Rest of the script remains the same
+async function loadConfig() {
+    try {
+        const response = await fetch('/config');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const config = await response.json();
+        window.CITY_API_KEY = config.CITY_API_KEY;
+        window.SUBMIT_API_KEY = config.SUBMIT_API_KEY;
+    } catch (error) {
+        console.error('Failed to load API keys:', error);
+        addBotMessage('Error loading configuration. Please ensure the server is running and try again later.');
+        setTimeout(loadConfig, 5000);
+    }
+}
 
 function injectChatbotStyles() {
     const css = `
-        
-/* Reset and Base Styles */
-*, ::before, ::after {
-    box-sizing: border-box;
-    outline: none;
-}
-body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    background-color: #f4f4f4;
-}
-body, ul, ol, li, h1, h2, h3, h4, h5, h6, figure, p, strong {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
+        /* Reset and Base Styles */
+        *, ::before, ::after {
+            box-sizing: border-box;
+            outline: none;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        body, ul, ol, li, h1, h2, h3, h4, h5, h6, figure, p, strong {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
 
-/* Chatbot Icon */
-#chatbot-icon {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #333, #555);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 8px #0000004d;
-    z-index: 1000;
-    transition: transform 0.3s ease;
-    animation: pulse 2s infinite ease-in-out;
-}
-#chatbot-icon::before {
-    font-size: 24px;
-    color: #fff;
-}
-#chatbot-icon.closed::before {
-    content: '💬';
-}
-#chatbot-icon.open::before {
-    content: 'X';
-}
-#chatbot-icon:hover {
-    animation: bounce 0.4s ease;
-}
-#chatbot-icon:focus {
-    outline: 2px solid #7be0b6;
-}
-@keyframes pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 4px 8px #0000004d; }
-    50% { transform: scale(1.05); box-shadow: 0 6px 12px #00000066; }
-}
-@keyframes bounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-}
+        /* Chatbot Icon */
+        #chatbot-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #333, #555);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px #0000004d;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        #chatbot-icon::before {
+            font-size: 24px;
+            color: #fff;
+        }
+        #chatbot-icon.closed::before {
+            content: '💬';
+        }
+        #chatbot-icon.open::before {
+            content: 'X';
+        }
+        #chatbot-icon:hover {
+            animation: bounce 0.4s ease;
+        }
+        #chatbot-icon:focus {
+            outline: 2px solid #7be0b6;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 8px #0000004d; }
+            50% { transform: scale(1.05); box-shadow: 0 6px 12px #00000066; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
 
-/* Chatbot Popup */
-.chatbot-popup {
-    position: fixed;
-    bottom: 90px;
-    right: 30px;
-    background: linear-gradient(135deg, #7be0b6, #4a9c7a);
-    color: #fff;
-    padding: 10px 15px;
-    border-radius: 10px;
-    box-shadow: 0 3px 6px #0000004d;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    text-shadow: 0 1px 1px #00000033;
-    display: none;
-    z-index: 999;
-    opacity: 0;
-    transform: translateY(15px) scale(0.8);
-    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-.chatbot-popup.show {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    display: block;
-}
-.chatbot-popup:not(.show) {
-    opacity: 0;
-    transform: translateY(10px) scale(0.9);
-}
-.chatbot-popup::after {
-    content: '';
-    position: absolute;
-    bottom: -6px;
-    right: 10px;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 6px solid #7be0b6;
-}
-.chatbot-popup:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 3px #7be0b633, 0 3px 6px #0000004d;
-}
-.chatbot-popup:focus {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-}
-@media (max-width: 600px) {
-    .chatbot-popup {
-        right: 10px;
-        font-size: 11px;
-        padding: 8px 12px;
-    }
-}
+        /* Chatbot Popup */
+        .chatbot-popup {
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            background: linear-gradient(135deg, #7be0b6, #4a9c7a);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px #0000004d;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            text-shadow: 0 1px 1px #00000033;
+            display: none;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(15px) scale(0.8);
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .chatbot-popup.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            display: block;
+        }
+        .chatbot-popup:not(.show) {
+            opacity: 0;
+            transform: translateY(10px) scale(0.9);
+        }
+        .chatbot-popup::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: 10px;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid #7be0b6;
+        }
+        .chatbot-popup:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px #7be0b633, 0 3px 6px #0000004d;
+        }
+        .chatbot-popup:focus {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        @media (max-width: 600px) {
+            .chatbot-popup {
+                right: 10px;
+                font-size: 11px;
+                padding: 8px 12px;
+            }
+        }
 
-/* Chatbot Window */
-#chatbot-window {
-    position: fixed;
-    bottom: 65px;
-    right: 85px;
-    width: 375px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px #0003;
-    display: none;
-    flex-direction: column;
-    z-index: 1000;
-}
-#chatbot-window.open {
-    display: flex;
-}
-#chatbot-window.dark-mode {
-    background: linear-gradient(145deg, #2a2a2a, #333);
-    color: #fff;
-}
-@media (max-width: 600px) {
-    #chatbot-window {
-        width: 100%;
-        height: 100%;
-        bottom: 0;
-        right: 0;
-        border-radius: 0;
-    }
-}
+        /* Chatbot Window */
+        #chatbot-window {
+            position: fixed;
+            bottom: 65px;
+            right: 85px;
+            width: 375px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px #0003;
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        #chatbot-window.open {
+            display: flex;
+        }
+        #chatbot-window.dark-mode {
+            background: linear-gradient(145deg, #2a2a2a, #333);
+            color: #fff;
+        }
+        @media (max-width: 600px) {
+            #chatbot-window {
+                width: 100%;
+                height: 100%;
+                bottom: 0;
+                right: 0;
+                border-radius: 0;
+            }
+        }
 
-/* Chatbot Header */
-.chatbot-header {
-    padding: 15px;
-    height: 78px;
-    border-radius: 12px 12px 0 0;
-    display: flex;
-    gap: 10px;
-    background: linear-gradient(135deg, #333, #555);
-    align-items: center;
-    position: relative; /* Ensure absolute positioning works */
-}
-.chatbot-header .company-profile {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.chatbot-header .company-profile p {
-    font-size: 15px;
-    color: #fff;
-    line-height: 16px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
-}
-.chatbot-header .company-profile span {
-    font-size: 14px;
-    color: #7be0b6;
-}
-.theme-toggle {
-    position: absolute;
-    top: 7px; /* Closer to top edge */
-    right: 7px; /* Top-right corner */
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 20px; /* Adjusted size */
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-.theme-toggle:hover {
-    transform: scale(1.1);
-}
-.theme-toggle:focus {
-    outline: 2px solid #7be0b6;
-}
+        /* Chatbot Header */
+        .chatbot-header {
+            padding: 15px;
+            height: 78px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            gap: 10px;
+            background: linear-gradient(135deg, #333, #555);
+            align-items: center;
+            position: relative;
+        }
+        .chatbot-header .company-profile {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .chatbot-header .company-profile p {
+            font-size: 15px;
+            color: #fff;
+            line-height: 16px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+        .chatbot-header .company-profile span {
+            font-size: 14px;
+            color: #7be0b6;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        .theme-toggle:focus {
+            outline: 2px solid #7be0b6;
+        }
 
-/* Chatbot Body */
-.chatbot-body {
-    flex: 1;
-    padding: 0;
-    overflow-y: auto;
-    background: #f7f4ff;
-    max-height: 300px;
-}
-.chatbot-body.dark-mode {
-    background: #222;
-}
-.chatbot-body::-webkit-scrollbar {
-    width: 8px;
-}
-.chatbot-body::-webkit-scrollbar-thumb {
-    background-color: #333;
-    border-radius: 4px;
-}
-.chatbot-body::-webkit-scrollbar-track {
-    background-color: #f1f1f1;
-}
+        /* Chatbot Body */
+        .chatbot-body {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+            background: #f7f4ff;
+            max-height: 300px;
+        }
+        .chatbot-body.dark-mode {
+            background: #222;
+        }
+        .chatbot-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chatbot-body::-webkit-scrollbar-thumb {
+            background-color: #333;
+            border-radius: 4px;
+        }
+        .chatbot-body::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+        }
 
-/* Messages */
-.message {
-    margin: 10px 0;
-    max-width: 80%;
-    font-size: 14px;
-    opacity: 0;
-    transform: translateY(10px);
-    animation: fadeIn 0.3s ease forwards;
-}
-.bot-message {
-    padding: 15px 20px;
-    background: #fff;
-    border-radius: 0 20px 20px 20px;
-    display: inline-flex;
-    flex-direction: column;
-    gap: 14px;
-    color: #333;
-}
-.bot-message.dark-mode {
-    background: #444;
-    color: #fff;
-}
-.bot-message.final-message {
-    font-weight: 600;
-    background: #e6f0fa;
-    border-left: 3px solid #7be0b6;
-}
-.bot-message.final-message.dark-mode {
-    background: #444;
-    border-left-color: #7be0b6;
-}
-.bot-message a {
-    color: #7be0b6;
-    font-weight: 600;
-    text-decoration: underline;
-    transition: color 0.2s ease;
-}
-.bot-message a:hover {
-    color: #4a9c7a;
-}
-.bot-message a:focus {
-    outline: 2px solid #7be0b6;
-    outline-offset: 2px;
-}
-.bot-message a.dark-mode {
-    color: #7be0b6;
-}
-.bot-message a.dark-mode:hover {
-    color: #9ef2c8;
-}
-.user-message {
-    background: linear-gradient(135deg, #333, #555);
-    color: #fff;
-    font-weight: 700;
-    padding: 10px;
-    border-radius: 10px 10px 0 10px;
-    margin-left: auto;
-}
-.selected-option {
-    background: linear-gradient(135deg, #333, #555);
-    font-weight: 700;
-    border: 1px solid #333;
-    padding: 8px 12px;
-}
-.reminder-message {
-    background-color: #fff3cd;
-    color: #856404;
-    padding: 15px 20px;
-    font-style: italic;
-    border-radius: 0 20px 20px 20px;
-}
-.reminder-message.dark-mode {
-    background: #4b3b1b;
-    color: #ffeb3b;
-}
+        /* Messages */
+        .message {
+            margin: 10px 0;
+            max-width: 80%;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.3s ease forwards;
+        }
+        .bot-message {
+            padding: 15px 20px;
+            background: #fff;
+            border-radius: 0 20px 20px 20px;
+            display: inline-flex;
+            flex-direction: column;
+            gap: 14px;
+            color: #333;
+        }
+        .bot-message.dark-mode {
+            background: #444;
+            color: #fff;
+        }
+        .bot-message.final-message {
+            font-weight: 600;
+            background: #e6f0fa;
+            border-left: 3px solid #7be0b6;
+        }
+        .bot-message.final-message.dark-mode {
+            background: #444;
+            border-left-color: #7be0b6;
+        }
+        .bot-message a {
+            color: #7be0b6;
+            font-weight: 600;
+            text-decoration: underline;
+            transition: color 0.2s ease;
+        }
+        .bot-message a:hover {
+            color: #4a9c7a;
+        }
+        .bot-message a:focus {
+            outline: 2px solid #7be0b6;
+            outline-offset: 2px;
+        }
+        .bot-message a.dark-mode {
+            color: #7be0b6;
+        }
+        .bot-message a.dark-mode:hover {
+            color: #9ef2c8;
+        }
+        .user-message {
+            background: linear-gradient(135deg, #333, #555);
+            color: #fff;
+            font-weight: 700;
+            padding: 10px;
+            border-radius: 10px 10px 0 10px;
+            margin-left: auto;
+        }
+        .selected-option {
+            background: linear-gradient(135deg, #333, #555);
+            font-weight: 700;
+            border: 1px solid #333;
+            padding: 8px 12px;
+        }
+        .reminder-message {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px 20px;
+            font-style: italic;
+            border-radius: 0 20px 20px 20px;
+        }
+        .reminder-message.dark-mode {
+            background: #4b3b1b;
+            color: #ffeb3b;
+        }
 
-/* Typing Indicator */
-.typing-indicator{padding:12px;border-radius:0 20px 20px 20px;background:#fff;display:flex;align-items:center;gap:8px;animation:pulseTyping 1.8s infinite ease-in-out;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-.typing-indicator.dark-mode{background:#444;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
-.typing-indicator.bouncing-dots .dot{width:10px;height:10px;background:#7be0b6;border-radius:50%;animation:dotPulse 1.4s infinite ease-in-out}
-.typing-indicator.bouncing-dots.dark-mode .dot{background:#7be0b6}
-.typing-indicator.bouncing-dots .dot:nth-child(1){animation-delay:0s}
-.typing-indicator.bouncing-dots .dot:nth-child(2){animation-delay:0.2s}
-.typing-indicator.bouncing-dots .dot:nth-child(3){animation-delay:0.4s}
+        /* Typing Indicator */
+        .typing-indicator {
+            padding: 12px;
+            border-radius: 0 20px 20px 20px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: pulseTyping 1.8s infinite ease-in-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .typing-indicator.dark-mode {
+            background: #444;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .typing-indicator.bouncing-dots .dot {
+            width: 10px;
+            height: 10px;
+            background: #7be0b6;
+            border-radius: 50%;
+            animation: dotPulse 1.4s infinite ease-in-out;
+        }
+        .typing-indicator.bouncing-dots.dark-mode .dot {
+            background: #7be0b6;
+        }
+        .typing-indicator.bouncing-dots .dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .typing-indicator.bouncing-dots .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator.bouncing-dots .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(1) translateY(0); opacity: 0.6; }
+            40% { transform: scale(1.6) translateY(-2px); opacity: 1; box-shadow: 0 0 8px rgba(123,224,182,0.5); }
+        }
+        @keyframes pulseTyping {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.03); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 600px) {
+            .message { font-size: 12px; }
+            .typing-indicator { padding: 8px; gap: 6px; }
+            .typing-indicator .dot { width: 8px; height: 8px; }
+        }
 
+        /* Chatbot Input */
+        .chatbot-input {
+            padding: 10px 20px;
+            border-top: 1px solid #ddd;
+            background: #fff;
+            border-radius: 0 0 12px 12px;
+        }
+        .chatbot-input.dark-mode {
+            background: #2a2a2a;
+            border-top-color: #444;
+        }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-wrapper input {
+            width: 100%;
+            padding: 8px 40px 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease;
+        }
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #7be0b6;
+        }
+        .input-wrapper input:focus + .submit-arrow {
+            background: #7be0b6;
+            color: #fff;
+        }
+        .input-wrapper input:valid:not(:placeholder-shown) {
+            border-color: #2e7d32;
+        }
+        .input-wrapper input:invalid:not(:placeholder-shown) {
+            border-color: #d32f2f;
+        }
+        .input-wrapper input.dark-mode {
+            background: #333;
+            color: #fff;
+            border-color: #555;
+        }
+        .input-wrapper .submit-arrow {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #333;
+            font-size: 18px;
+            cursor: pointer;
+            background: #f0f0f0;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .input-wrapper .submit-arrow:hover {
+            background: #e0e0e0;
+            transform: scale(1.1) translateY(-50%);
+        }
+        .input-wrapper input:focus::after {
+            content: 'Press Enter';
+            position: absolute;
+            bottom: 2px;
+            right: 45px;
+            font-size: 10px;
+            color: #7be0b6;
+            font-style: italic;
+        }
+        @media (max-width: 600px) {
+            .input-wrapper input {
+                font-size: 12px;
+            }
+            .input-wrapper input:focus::after {
+                font-size: 9px;
+            }
+        }
 
-@keyframes dotPulse {
-    0%, 80%, 100% {transform:scale(1) translateY(0);opacity:0.6}
-    40% {transform:scale(1.6) translateY(-2px);opacity:1;box-shadow:0 0 8px rgba(123,224,182,0.5)}
-}
+        /* OTP Input */
+        .otp-container {
+            display: flex;
+            gap: 7px;
+            justify-content: center;
+            margin-bottom: 1px;
+        }
+        .otp-input {
+            width: 35px;
+            height: 35px;
+            text-align: center;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .error-message {
+            color: #d32f2f;
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0;
+            animation: fadeIn 0.3s ease forwards;
+        }
+        .otp-input:focus {
+            outline: none;
+            border-color: #7be0b6;
+            box-shadow: 0 0 5px rgba(123,224,255,0.5);
+        }
+        .otp-input:valid {
+            border-color: #2e7d32;
+        }
+        .otp-input:invalid:not(:placeholder-shown) {
+            border-color: #d32f2f;
+        }
+        .otp-input.dark-mode {
+            background: #333;
+            color: #fff;
+            border-color: #555;
+        }
+        .otp-resend {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        .otp-resend button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #ccc;
+            color: #fff;
+            cursor: not-allowed;
+            font-size: 13px;
+            transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+        }
+        .otp-resend button.enabled {
+            background: linear-gradient(135deg, #7be0b6, #4a9c7a);
+            cursor: pointer;
+        }
+        .otp-resend button.enabled:hover {
+            transform: scale(1.05);
+        }
+        .otp-resend button:focus {
+            outline: 1px solid #7be0b6;
+        }
+        .otp-resend button.secondary {
+            background: linear-gradient(135deg, #555, #777);
+            cursor: pointer;
+        }
+        .otp-resend button.secondary:hover {
+            transform: scale(1.05);
+        }
+        .otp-timer {
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: center;
+        }
+        .otp-timer.dark-mode {
+            color: #fff;
+        }
+        @media (max-width: 600px) {
+            .otp-resend button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
 
-@keyframes pulseTyping {
-    0%, 100% {transform:scale(1);opacity:0.9}
-    50% {transform:scale(1.03);opacity:1}
-} 
-@keyframes fadeIn {
-    to {opacity:1;transform:translateY(0)}
-}
-@media (max-width: 600px) {
-    .message{font-size:12px}
-    .typing-indicator{padding:8px;gap:6px}
-    .typing-indicator .dot{width:8px;height:8px}
-    .typing-indicator.rotating-squares .dot{width:8px;height:8px}
-}
+        /* Autocomplete Dropdown */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px #0000001a;
+            z-index: 1001;
+            display: none;
+            transform-origin: top;
+            transform: scaleY(0);
+            transition: transform 0.2s ease;
+        }
+        .autocomplete-dropdown.active {
+            transform: scaleY(1);
+            display: block;
+        }
+        .autocomplete-dropdown.dark-mode {
+            background: #333;
+            border-color: #555;
+        }
+        .autocomplete-dropdown .autocomplete-item {
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            transition: background-color 0.2s ease;
+        }
+        .autocomplete-dropdown .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: #e6f0fa;
+        }
+        .autocomplete-dropdown.dark-mode .autocomplete-item {
+            color: #fff;
+        }
+        .autocomplete-dropdown.dark-mode .autocomplete-item:hover,
+        .autocomplete-dropdown.dark-mode .autocomplete-item.active {
+            background: #444;
+        }
+        .autocomplete-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+        .autocomplete-dropdown::-webkit-scrollbar-thumb {
+            background-color: #333;
+            border-radius: 3px;
+        }
+        .autocomplete-dropdown::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+        }
 
-/* Chatbot Input */
-.chatbot-input {
-    padding: 10px 20px;
-    border-top: 1px solid #ddd;
-    background: #fff;
-    border-radius: 0 0 12px 12px;
-}
-.chatbot-input.dark-mode {
-    background: #2a2a2a;
-    border-top-color: #444;
-}
-.input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-.input-wrapper input {
-    width: 100%;
-    padding: 8px 40px 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-    box-sizing: border-box;
-    transition: border-color 0.2s ease;
-}
-.input-wrapper input:focus {
-    outline: none;
-    border-color: #7be0b6;
-}
-.input-wrapper input:focus + .submit-arrow {
-    background: #7be0b6;
-    color: #fff;
-}
-.input-wrapper input:valid:not(:placeholder-shown) {
-    border-color: #2e7d32;
-}
-.input-wrapper input:invalid(:placeholder-shown) {
-    border-color: #d32f2f;
-}
-.input-wrapper input.dark-mode {
-    background: #333;
-    color: #fff;
-    border-color: #555;
-}
-.input-wrapper .submit-arrow{position:absolute;right:5px;top:50%;transform:translateY(-50%);color:#333;font-size:18px;cursor:pointer;background:#f0f0f0;width:30px;height:30px;border-radius:5px;display:flex;align-items:center;justify-content:center;transition:background-color 0.2s ease, transform 0.2s ease}
+        /* Chatbot Buttons */
+        .chatbot-input .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .chatbot-input button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #333, #555);
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+        .chatbot-input .default {
+            background: #fff;
+            color: #333;
+            border-width: 1px;
+            border-style: solid;
+            border-color: #333;
+        }
+        .chatbot-input button:hover {
+            transform: scale(1.05);
+        }
+        .chatbot-input button:focus {
+            outline: 2px solid #7be0b6;
+        }
+        .chatbot-input button.secondary {
+            background: linear-gradient(135deg, #555, #777);
+            color: #fff;
+        }
+        .chatbot-input .clear-chat-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff4d4d;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+        .chatbot-input .clear-chat-btn:hover {
+            transform: scale(1.05);
+        }
+        .chatbot-input .clear-chat-btn:focus {
+            outline: 2px solid #7be0b6;
+        }
+        @media (max-width: 600px) {
+            .chatbot-input button {
+                font-size: 12px;
+            }
+            .chatbot-input .clear-chat-btn {
+                font-size: 12px;
+            }
+        }
 
+        /* Final Message Container */
+        .final-message-container {
+            display: flex;
+            align-items: center;
+            background: #f0f8ff;
+            border: 1px solid #b3e5fc;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+        .final-message-container.dark-mode {
+            background: #2e5f5e;
+            border-color: #4b6f7d;
+            color: #fff;
+        }
+        @media (max-width: 600px) {
+            .final-message-container {
+                font-size: 12px;
+            }
+        }
+        .final-message-container img.agent-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
 
-.input-wrapper .submit-arrow:hover {
-    background: #e0e0e0;
-    transform: scale(1.1) translateY(-50%);
-}
-.input-wrapper input:focus::after {
-    content: 'Press Enter';
-    position: absolute;
-    bottom: 2px;
-    right: 45px;
-    font-size: 10px;
-    color: #7be0b6;
-    font-style: italic;
-}
-@media (max-width: 600px) {
-    .input-wrapper input {
-        font-size: 12px;
-    }
-    .input-wrapper input:focus::after {
-        font-size: 9px;
-    }
-}
-
-/* OTP Input */
-.otp-container {
-    display: flex;
-    gap: 7px;
-    justify-content: center;
-    margin-bottom: 1px;
-}
-.otp-input {
-    width: 35px;
-    height: 35px;
-    text-align: center;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.error-message{color:#d32f2f;font-size:11px;margin-top:5px;opacity:0;animation:fadeIn 0.3s ease forwards}
-
-
-.otp-input:focus {
-    outline: none;
-    border-color: #7be0b6;
-    box-shadow: 0 0 5px rgba(123,224,255,0.5);
-}
-.otp-input:valid {
-    border-color: #2e7d32;
-}
-.otp-input:invalid:not(:placeholder-shown) {
-    border-color: #d32f2f;
-}
-.otp-input.dark-mode {
-    background: #333;
-    color: #fff;
-    border-color: #555;
-}
-.otp-resend {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;    margin-top: 8px;
-}
-.otp-resend button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    background: #ccc;
-    color: #fff;
-    cursor: not-allowed;
-    font-size: 13px;
-    transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
-}
-.otp-resend button.enabled {
-    background: linear-gradient(135deg, #7be0b6, #4a9c7a);
-    cursor: pointer;
-}
-.otp-resend button.enabled:hover {
-    transform: scale(1.05);
-}
-.otp-resend button:focus {
-    outline: 1px solid #7be0b6;
-}
-.otp-resend button.secondary {
-    background: linear-gradient(135deg, #555, #777);
-    cursor: pointer;
-}
-.otp-resend button.secondary:hover {
-    transform: scale(1.05);
-}
-.otp-timer {
-    font-size: 12px;
-    color: #333;
-    margin-bottom: 5px;
-    display: flex;
-    justify-content: center;
-}
-.otp-timer.dark-mode {
-    color: #fff;
-}
-@media (max-width: 600px) {
-    .otp-resend button {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-}
-
-/* Autocomplete Dropdown */
-.autocomplete-dropdown{position:absolute;top:100%;left:0;width:100%;max-height:150px;overflow-y:auto;background:#fff;border:1px solid #ccc;border-radius:5px;box-shadow:0 2px 5px #0000001a;z-index:1001;display:none;transform-origin:top;transform:scaleY(0);transition:transform 0.2s ease}
-.autocomplete-dropdown.active{transform:scaleY(1);display:block}
-.autocomplete-dropdown.dark-mode{background:#333;border-color:#555}
-.autocomplete-dropdown .autocomplete-item{padding:8px 10px;cursor:pointer;font-size:14px;color:#333;transition:background-color 0.2s ease}
-.autocomplete-dropdown .autocomplete-item:hover,.autocomplete-item.active{background:#e6f0fa}
-.autocomplete-dropdown.dark-mode .autocomplete-item{color:#fff}
-.autocomplete-dropdown.dark-mode .autocomplete-item:hover,.autocomplete-dropdown.dark-mode .autocomplete-item.active{background:#444}
-.autocomplete-dropdown::-webkit-scrollbar{width:6px}
-.autocomplete-dropdown::-webkit-scrollbar-thumb{background-color:#333;border-radius:3px}
-.autocomplete-dropdown::-webkit-scrollbar-track{background-color:#f1f1f1}
-
-/* Chatbot Buttons */
-.chatbot-input .buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-.chatbot-input button {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    background: linear-gradient(135deg, #333, #555);
-    color: #fff;
-    cursor: pointer;
-    font-size: 14px;
-    transition: transform 0.2s ease;
-}
-.chatbot-input .default {
-    background: #fff;
-    color: #333;
-    border-width: 1px;border-style: solid;border-color: #333;
-}
-.chatbot-input button:hover {
-    transform: scale(1.05);
-}
-.chatbot-input button:focus {
-    outline: 2px solid #7be0b6;
-}
-.chatbot-input button.secondary {
-    background: linear-gradient(135deg, #555, #777);
-    color: #fff;
-}
-.chatbot-input .clear-chat-btn {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #ff4d4d;
-    color: #fff;
-    cursor: pointer;
-    font-size: 14px;
-    text-align: center;
-    transition: transform 0.2s ease;
-}
-.chatbot-input .clear-chat-btn:hover {
-    transform: scale(1.05);
-}
-.chatbot-input .clear-chat-btn:focus {
-    outline: 2px solid #7be0b6;
-}
-@media (max-width: 600px) {
-    .chatbot-input button {
-        font-size: 12px;
-    }
-    .chatbot-input .clear-chat-btn {
-        font-size: 12px;
-    }
-}
-
-/* Final Message Container */
-.final-message-container {
-    display: flex;
-    align-items: center;
-    background: #f0f8ff;
-    border: 1px solid #b3e5fc;
-    border-radius: 8px;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 14px;
-    color: #333;
-}
-.final-message-container.dark-mode {
-    background: #2e5f5e;
-    border-color: #4b6f7d;
-    color: #fff;
-}
-@media (max-width: 600px) {
-    .final-message-container {
-        font-size: 12px;
-    }
-}
-.final-message-container img.agent-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-/* Online Status */
-.online-status {
-    display: flex;
-    align-items: center;
-    font-size: 12px;
-    color: #2e7d32;
-    margin-bottom: 5px;
-}
-.online-status.dark-mode {
-    color: #7be0b6;
-}
-@media (max-width: 600px) {
-    .online-status {
-        font-size: 10px;
-    }
-}
-.online-dot {
-    width: 10px;
-    height: 10px;
-    background-color: #2e7d32;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-.online-dot.dark-mode {
-    background-color: #7be0b6;
-}
+        /* Online Status */
+        .online-status {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #2e7d32;
+            margin-bottom: 5px;
+        }
+        .online-status.dark-mode {
+            color: #7be0b6;
+        }
+        @media (max-width: 600px) {
+            .online-status {
+                font-size: 10px;
+            }
+        }
+        .online-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #2e7d32;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .online-dot.dark-mode {
+            background-color: #7be0b6;
+        }
     `;
     const styleElement = document.createElement('style');
     styleElement.type = 'text/css';
@@ -715,8 +872,8 @@ const state = {
     data: {
         userType: '',
         listingType: '',
-        city: '',      // Stores cityName for UI
-        cityId: '',    // NEW: Stores cityId for backend
+        city: '',
+        cityId: '',
         name: '',
         number: '',
         otp: '',
@@ -734,10 +891,9 @@ const state = {
     lastOtpSent: null,
     timerInterval: null,
     isLeadSubmitted: false,
-    bypassOtp: false // For local testing
+    bypassOtp: false
 };
 
-// Change cityList to store objects with name and id
 let cityList = [];
 let cityListFetched = false;
 let popupInterval = null;
@@ -750,45 +906,6 @@ const popupMessages = [
     "Post Your Listing Now!",
     "Find Buyers or Tenants Today!"
 ];
-
-
-// DOM Elements
-// Move DOM initialization inside DOMContentLoaded
-// document.addEventListener('DOMContentLoaded', () => {
-//     console.log('DOM fully loaded, initializing chatbot');
-
-//     // Dynamically query DOM elements
-//     const chatbotIcon = document.querySelector('#chatbot-icon');
-//     const chatbotPopup = document.querySelector('.chatbot-popup');
-//     const chatbotWindow = document.querySelector('#chatbot-window');
-//     const chatbotBodyDiv = document.querySelector('#chatbot-body');
-//     const chatbotInputDiv = document.querySelector('#chatbot-input');
-//     const themeToggleBtn = document.querySelector('.theme-toggle');
-
-//     // Check if required elements exist
-//     if (!chatbotIcon || !chatbotPopup || !chatbotWindow || !chatbotBodyDiv || !chatbotInputDiv || !themeToggleBtn) {
-//         console.error('One or more required chatbot elements not found:', {
-//             chatbotIcon, chatbotPopup, chatbotWindow, chatbotBodyDiv, chatbotInputDiv, themeToggleBtn
-//         });
-//         if (chatbotBodyDiv) {
-//             chatbotBodyDiv.innerHTML = '<div class="message bot-message">Error: Required chatbot elements not found. Please ensure the HTML structure is correct.</div>';
-//         }
-//         return;
-//     }
-
-//     // Assign to global variables (if needed by other functions)
-//     window.chatbotIcon = chatbotIcon;
-//     window.chatbotPopup = chatbotPopup;
-//     window.chatbotWindow = chatbotWindow;
-//     window.chatbotBodyDiv = chatbotBodyDiv;
-//     window.chatbotInputDiv = chatbotInputDiv;
-//     window.themeToggleBtn = themeToggleBtn;
-
-//     // Inject styles and initialize
-//     injectChatbotStyles();
-//     initializePropertyListingChatbot();
-// });
-
 
 // Utility Functions
 function debounce(func, wait) {
@@ -804,19 +921,19 @@ function debounce(func, wait) {
 }
 
 function showPopupMessage() {
-    if (!chatbotIcon.classList.contains('closed')) {
-        chatbotPopup.classList.remove('show');
-        chatbotPopup.setAttribute('aria-hidden', 'true');
+    if (!window.chatbotIcon.classList.contains('closed')) {
+        window.chatbotPopup.classList.remove('show');
+        window.chatbotPopup.setAttribute('aria-hidden', 'true');
         return;
     }
     const randomMessage = popupMessages[Math.floor(Math.random() * popupMessages.length)];
-    chatbotPopup.textContent = randomMessage;
-    chatbotPopup.setAttribute('aria-label', randomMessage);
-    chatbotPopup.setAttribute('aria-hidden', 'false');
-    chatbotPopup.classList.add('show');
+    window.chatbotPopup.textContent = randomMessage;
+    window.chatbotPopup.setAttribute('aria-label', randomMessage);
+    window.chatbotPopup.setAttribute('aria-hidden', 'false');
+    window.chatbotPopup.classList.add('show');
     setTimeout(() => {
-        chatbotPopup.classList.remove('show');
-        chatbotPopup.setAttribute('aria-hidden', 'true');
+        window.chatbotPopup.classList.remove('show');
+        window.chatbotPopup.setAttribute('aria-hidden', 'true');
     }, 6000);
 }
 
@@ -827,78 +944,22 @@ function startPopupInterval() {
 
 function stopPopupInterval() {
     clearInterval(popupInterval);
-    chatbotPopup.classList.remove('show');
-    chatbotPopup.setAttribute('aria-hidden', 'true');
+    window.chatbotPopup.classList.remove('show');
+    window.chatbotPopup.setAttribute('aria-hidden', 'true');
 }
 
-// // Event Listeners
-// themeToggleBtn.addEventListener('click', () => {
-//     const isDarkMode = chatbotWindow.classList.toggle('dark-mode');
-//     chatbotBodyDiv.classList.toggle('dark-mode');
-//     chatbotInputDiv.classList.toggle('dark-mode');
-//     themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
-//     document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
-//         item.classList.toggle('dark-mode', isDarkMode);
-//     });
-// });
-
-// animationToggleBtn.addEventListener('click', () => {
-//     const currentIndex = animationStyles.indexOf(currentAnimationStyle);
-//     currentAnimationStyle = animationStyles[(currentIndex + 1) % animationStyles.length];
-//     removeTypingIndicator();
-//     showTypingIndicator();
-//     setTimeout(removeTypingIndicator, 1000);
-// });
-
-// chatbotIcon.addEventListener('click', () => toggleChatbot());
-// chatbotIcon.addEventListener('keydown', (e) => {
-//     if (e.key === 'Enter' || e.key === ' ') {
-//         e.preventDefault();
-//         toggleChatbot();
-//     }
-// });
-
-// chatbotPopup.addEventListener('click', () => toggleChatbot());
-// chatbotPopup.addEventListener('keydown', (e) => {
-//     if (e.key === 'Enter' || e.key === ' ') {
-//         e.preventDefault();
-//         toggleChatbot();
-//     }
-// });
-
-// closeBtn.addEventListener('click', () => {
-//     chatbotWindow.style.display = 'none';
-//     chatbotWindow.classList.remove('open');
-//     clearReminderTimeout();
-//     clearInterval(state.timerInterval);
-//     chatbotIcon.classList.remove('open');
-//     chatbotIcon.classList.add('closed');
-//     chatbotIcon.focus();
-//     startPopupInterval();
-// });
-
 // API Functions
-// At the top of script.js, before fetchCityList
-// cityList = [
-//     { name: 'Mumbai', id: '1' },
-//     { name: 'Delhi', id: '2' },
-//     { name: 'Bangalore', id: '3' }
-// ];
-// // let cityListFetched = true; // Set to true to skip the API call
-
-// // Override the fetchCityList function
-// async function fetchCityList() {
-//     console.log('Using mock city list for development:', cityList);
-//     // No API call, just log and set fetched flag
-//     cityListFetched = true;
-// }
-
 async function fetchCityList() {
+    if (!window.CITY_API_KEY) {
+        console.error('CITY_API_KEY not loaded');
+        addBotMessage('Error: API key not available. Please try again later.');
+        return;
+    }
     try {
         const response = await fetch('https://beats.squareyards.com/api/SecondaryPortal/getCityList', {
             method: 'POST',
             headers: {
-                'api_key': 'uAqGJ6bvNqcqsxh4TXMRHP596adeEMLVomMZywp1U0VHUeHLwHxv5jbe5Aw8',
+                'api_key': window.CITY_API_KEY,
                 'Content-Type': 'application/json',
                 'Origin': 'http://127.0.0.1:5501'
             },
@@ -909,13 +970,11 @@ async function fetchCityList() {
             })
         });
         const data = await response.json();
-        console.log('City API Response:', data); // Debug
         if (data.status === 1 && data.mastercities && Array.isArray(data.mastercities)) {
             cityList = data.mastercities.map(city => ({
                 name: city.cityName,
                 id: city.cityid.toString()
             })).sort((a, b) => a.name.localeCompare(b.name));
-            console.log('Available Cities:', cityList.map(c => ({ name: c.name, id: c.id }))); // Debug: Log city IDs
         } else {
             console.error('Failed to fetch city list:', data);
             addBotMessage('Error loading cities. Please try again.');
@@ -956,7 +1015,7 @@ async function sendOtp(number) {
 }
 
 async function verifyOtp(number, otp) {
-    if (state.bypassOtp) return true; // Simulate OTP for testing
+    if (state.bypassOtp) return true;
     try {
         const response = await fetch('https://syai-property-chatbot.squareyards.com/api/otp/verify', {
             method: 'POST',
@@ -1011,7 +1070,6 @@ async function sendChatMessage(message) {
     }
 }
 
-// OTP Timer
 function startOtpTimer(resendButton, timerSpan) {
     let timeLeft = 30;
     timerSpan.textContent = `(Wait ${timeLeft}s)`;
@@ -1030,125 +1088,42 @@ function startOtpTimer(resendButton, timerSpan) {
     }, 1000);
 }
 
-// Chatbot Logic
-chatbotIcon.classList.add('closed');
-startPopupInterval();
-
 function toggleChatbot() {
-    console.log('Toggle chatbot clicked');
-    const isWindowOpen = chatbotWindow.classList.contains('open');
+    const isWindowOpen = window.chatbotWindow.classList.contains('open');
     if (isWindowOpen) {
-        chatbotWindow.style.display = 'none';
-        chatbotWindow.classList.remove('open');
+        window.chatbotWindow.style.display = 'none';
+        window.chatbotWindow.classList.remove('open');
         clearReminderTimeout();
         clearInterval(state.timerInterval);
-        chatbotIcon.classList.remove('open');
-        chatbotIcon.classList.add('closed');
+        window.chatbotIcon.classList.remove('open');
+        window.chatbotIcon.classList.add('closed');
         startPopupInterval();
     } else {
-        chatbotWindow.style.display = 'block';
-        chatbotWindow.classList.add('open');
+        window.chatbotWindow.style.display = 'flex';
+        window.chatbotWindow.classList.add('open');
         if (!state.hasStarted) {
             startChat();
             state.hasStarted = true;
         }
-        chatbotIcon.classList.remove('closed');
-        chatbotIcon.classList.add('open');
+        window.chatbotIcon.classList.remove('closed');
+        window.chatbotIcon.classList.add('open');
         stopPopupInterval();
-        chatbotInputDiv.querySelector('input, button')?.focus();
+        window.chatbotInputDiv.querySelector('input, button')?.focus();
     }
 }
 
-// async function startChat() {
-//         addBotMessage('👋 Hi! Let’s list your property on SquareYards. 🚀');
-//         if (!cityListFetched) {
-//             fetchCityList().then(() => {
-//                 cityListFetched = true;
-//             });
-//         }
-//         showStep(0);
-//     }
 async function startChat() {
     addBotMessage('👋 Hi! Let’s list your property on SquareYards. 🚀');
-    showStep(0); // Show the first step immediately
-
-    // Fetch city list in the background
+    showStep(0);
     if (!cityListFetched) {
         try {
             await fetchCityList();
-            console.log('City list fetched successfully');
         } catch (error) {
             console.warn('City list fetch failed, proceeding without it:', error);
             addBotMessage('City list unavailable. Please proceed with manual input if needed.');
         }
     }
 }
-
-
-
-// const steps = [
-//     {
-//         message: 'Are you the property owner or an agent? 🧑‍💼',
-//         input: 'buttons',
-//         options: ['Owner', 'Agent'],
-//         field: 'userType',
-//         reminder: '⏳ Are you still there? Please choose if you’re an owner or agent.'
-//     },
-//     {
-//         message: '🏠 Is the property for sale or rent? 💸',
-//         input: 'buttons',
-//         options: ['Sale', 'Rent'],
-//         field: 'listingType',
-//         reminder: '⏳ Are you still there? Please select if the property is for sale or rent.'
-//     },
-//     {
-//         message: '📍 Which city is your property in? 🌆 (Please select from the dropdown)',
-//         input: 'text',
-//         placeholder: 'Type and select a city (e.g., Mumbai)',
-//         field: 'city',
-//         validate: (value) => {
-//             if (value.trim().length === 0) {
-//                 return 'Please enter a valid city.';
-//             }
-//             if (!cityList.some(city => city.name === value)) {
-//                 return 'Please select a city from the dropdown list.';
-//             }
-//             return '';
-//         },
-//         reminder: '⏳ Are you still there? Please select your city from the dropdown.'
-//     },
-//     {
-//         message: '✨ To list your property quickly and hassle-free, our expert agent is ready to assist you personally! Please share your name. 📝',
-//         input: 'text',
-//         placeholder: 'Enter your full name',
-//         field: 'name',
-//         validate: (value) => {
-//             if (!/^[a-zA-Z\s]{1,20}$/.test(value)) {
-//                 return 'Please enter a valid name (only letters, max 20 characters).';
-//             }
-//             return '';
-//         },
-//         reminder: '⏳ Are you still there? Please share your name.'
-//     },
-//     {
-//         message: '📞 Please enter your 10-digit phone number to receive an OTP for verification. 🔒 Your data is secure.',
-//         input: 'text',
-//         placeholder: 'Enter 10-digit phone number',
-//         field: 'number',
-//         validate: (value) => /^[0-9]{10}$/.test(value) ? '' : 'Please enter a valid 10-digit phone number.',
-//         reminder: '⏳ Are you still there? Please enter your phone number.'
-//     },
-//     {
-//             message: ' Please enter the 4-digit OTP sent to your phone number.',
-//             input: 'otp',
-//             placeholder: 'Enter OTP',
-//             field: 'otp',
-//             validate: (value) => /^[0-9]{4}$/.test(value) ? '' : 'Please enter a valid 4-digit OTP.',
-//             reminder: ' Are you still there? Please enter the OTP.'
-//         }
-
-
-// ];
 
 function showStep(stepIndex) {
     state.step = stepIndex;
@@ -1160,7 +1135,7 @@ function showStep(stepIndex) {
         removeTypingIndicator();
         addBotMessage(step.message);
         setTimeout(() => {
-            chatbotInputDiv.innerHTML = '';
+            window.chatbotInputDiv.innerHTML = '';
             clearReminderTimeout();
             if (stepIndex !== 5) {
                 state.reminderTimeout = setTimeout(() => {
@@ -1168,7 +1143,7 @@ function showStep(stepIndex) {
                         addBotMessage(step.reminder, 'reminder-message');
                         state.reminderShown = true;
                     }
-                }, 20000); // Increased timeout for reminder
+                }, 20000);
             }
 
             if (step.input === 'buttons') {
@@ -1182,7 +1157,7 @@ function showStep(stepIndex) {
                     button.className = index === 0 ? 'default' : 'secondary';
                     buttonsDiv.appendChild(button);
                 });
-                chatbotInputDiv.appendChild(buttonsDiv);
+                window.chatbotInputDiv.appendChild(buttonsDiv);
                 buttonsDiv.querySelector('button')?.focus();
             } else if (step.input === 'text') {
                 const inputWrapper = document.createElement('div');
@@ -1192,7 +1167,7 @@ function showStep(stepIndex) {
                 input.type = step.field === 'number' ? 'tel' : 'text';
                 input.placeholder = step.placeholder;
                 input.setAttribute('aria-label', step.placeholder);
-                input.classList.toggle('dark-mode', chatbotWindow.classList.contains('dark-mode'));
+                input.classList.toggle('dark-mode', window.chatbotWindow.classList.contains('dark-mode'));
                 if (step.field === 'number') {
                     input.pattern = '[0-9]{10}';
                     input.maxLength = 10;
@@ -1211,11 +1186,11 @@ function showStep(stepIndex) {
                 inputWrapper.appendChild(input);
                 inputWrapper.appendChild(submitArrow);
 
-                chatbotInputDiv.appendChild(inputWrapper);
+                window.chatbotInputDiv.appendChild(inputWrapper);
 
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'error-message';
-                chatbotInputDiv.appendChild(errorDiv);
+                window.chatbotInputDiv.appendChild(errorDiv);
 
                 if (step.field === 'city') {
                     const dropdown = document.createElement('div');
@@ -1242,12 +1217,12 @@ function showStep(stepIndex) {
                             filteredCities.slice(0, 5).forEach((city, index) => {
                                 const item = document.createElement('div');
                                 item.className = 'autocomplete-item';
-                                item.textContent = city.name; // Show cityName
+                                item.textContent = city.name;
                                 item.setAttribute('tabindex', '0');
                                 item.setAttribute('role', 'option');
                                 item.addEventListener('click', () => {
                                     input.value = city.name;
-                                    state.data.cityId = city.id; // Store cityId
+                                    state.data.cityId = city.id;
                                     dropdown.innerHTML = '';
                                     dropdown.style.display = 'none';
                                     dropdown.classList.remove('active');
@@ -1256,7 +1231,7 @@ function showStep(stepIndex) {
                                 item.addEventListener('keydown', (e) => {
                                     if (e.key === 'Enter') {
                                         input.value = city.name;
-                                        state.data.cityId = city.id; // Store cityId
+                                        state.data.cityId = city.id;
                                         dropdown.innerHTML = '';
                                         dropdown.style.display = 'none';
                                         dropdown.classList.remove('active');
@@ -1274,7 +1249,6 @@ function showStep(stepIndex) {
                     }, 300);
 
                     input.addEventListener('input', (e) => {
-                        console.log('City input:', e.target.value); // Debug
                         debouncedAutocomplete(e.target.value, dropdown);
                         if (step.validate) {
                             errorDiv.textContent = step.validate(e.target.value);
@@ -1299,7 +1273,7 @@ function showStep(stepIndex) {
                             e.preventDefault();
                             const selectedCity = filteredCities[activeIndex];
                             input.value = selectedCity.name;
-                            state.data.cityId = selectedCity.id; // Store cityId
+                            state.data.cityId = selectedCity.id;
                             dropdown.innerHTML = '';
                             dropdown.style.display = 'none';
                             dropdown.classList.remove('active');
@@ -1308,7 +1282,7 @@ function showStep(stepIndex) {
                             e.preventDefault();
                             const selectedCity = cityList.find(city => city.name === input.value);
                             if (selectedCity) {
-                                state.data.cityId = selectedCity.id; // Store cityId
+                                state.data.cityId = selectedCity.id;
                                 dropdown.innerHTML = '';
                                 dropdown.style.display = 'none';
                                 dropdown.classList.remove('active');
@@ -1326,7 +1300,7 @@ function showStep(stepIndex) {
                     submitArrow.addEventListener('click', () => {
                         const selectedCity = cityList.find(city => city.name === input.value);
                         if (selectedCity) {
-                            state.data.cityId = selectedCity.id; // Store cityId
+                            state.data.cityId = selectedCity.id;
                             dropdown.innerHTML = '';
                             dropdown.style.display = 'none';
                             dropdown.classList.remove('active');
@@ -1379,7 +1353,7 @@ function showStep(stepIndex) {
                     input.pattern = '[0-9]';
                     input.inputMode = 'numeric';
                     input.setAttribute('aria-label', `OTP digit ${i + 1}`);
-                    input.classList.toggle('dark-mode', chatbotWindow.classList.contains('dark-mode'));
+                    input.classList.toggle('dark-mode', window.chatbotWindow.classList.contains('dark-mode'));
                     input.addEventListener('input', (e) => {
                         e.target.value = e.target.value.replace(/[^0-9]/g, '');
                         if (e.target.value.length === 1 && i < 3) {
@@ -1403,8 +1377,8 @@ function showStep(stepIndex) {
 
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'error-message';
-                chatbotInputDiv.appendChild(otpContainer);
-                chatbotInputDiv.appendChild(errorDiv);
+                window.chatbotInputDiv.appendChild(otpContainer);
+                window.chatbotInputDiv.appendChild(errorDiv);
 
                 const resendDiv = document.createElement('div');
                 resendDiv.className = 'otp-resend';
@@ -1412,7 +1386,7 @@ function showStep(stepIndex) {
                 resendButton.textContent = 'Resend OTP';
                 const timerSpan = document.createElement('span');
                 timerSpan.className = 'otp-timer';
-                timerSpan.classList.toggle('dark-mode', chatbotWindow.classList.contains('dark-mode'));
+                timerSpan.classList.toggle('dark-mode', window.chatbotWindow.classList.contains('dark-mode'));
                 resendDiv.appendChild(timerSpan);
                 resendDiv.appendChild(resendButton);
 
@@ -1439,7 +1413,7 @@ function showStep(stepIndex) {
                 });
                 resendDiv.appendChild(editNumberButton);
 
-                chatbotInputDiv.appendChild(resendDiv);
+                window.chatbotInputDiv.appendChild(resendDiv);
 
                 startOtpTimer(resendButton, timerSpan);
 
@@ -1477,15 +1451,15 @@ function showTypingIndicator() {
     indicator.className = `message typing-indicator ${currentAnimationStyle}`;
     indicator.setAttribute('aria-hidden', 'true');
     indicator.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-    if (chatbotWindow.classList.contains('dark-mode')) {
+    if (window.chatbotWindow.classList.contains('dark-mode')) {
         indicator.classList.add('dark-mode');
     }
-    chatbotBodyDiv.appendChild(indicator);
-    chatbotBodyDiv.scrollTop = chatbotBodyDiv.scrollHeight;
+    window.chatbotBodyDiv.appendChild(indicator);
+    window.chatbotBodyDiv.scrollTop = window.chatbotBodyDiv.scrollHeight;
 }
 
 function removeTypingIndicator() {
-    const indicator = chatbotBodyDiv.querySelector('.typing-indicator');
+    const indicator = window.chatbotBodyDiv.querySelector('.typing-indicator');
     if (indicator) {
         indicator.remove();
     }
@@ -1494,20 +1468,20 @@ function removeTypingIndicator() {
 function addBotMessage(htmlContent, className = 'bot-message', timeout = 0) {
     const message = document.createElement('div');
     message.className = `message ${className}`;
-    if (chatbotWindow.classList.contains('dark-mode')) {
+    if (window.chatbotWindow.classList.contains('dark-mode')) {
         message.classList.add('dark-mode');
     }
     message.innerHTML = htmlContent;
-    chatbotBodyDiv.appendChild(message);
+    window.chatbotBodyDiv.appendChild(message);
 
     if (timeout > 0) {
         setTimeout(() => message.remove(), timeout);
     }
 
-    const isScrolledToBottom = chatbotBodyDiv.scrollHeight - chatbotBodyDiv.scrollTop - chatbotBodyDiv.clientHeight < 600;
+    const isScrolledToBottom = window.chatbotBodyDiv.scrollHeight - window.chatbotBodyDiv.scrollTop - window.chatbotBodyDiv.clientHeight < 600;
     if (isScrolledToBottom) {
-        chatbotBodyDiv.scrollTo({
-            top: chatbotBodyDiv.scrollHeight,
+        window.chatbotBodyDiv.scrollTo({
+            top: window.chatbotBodyDiv.scrollHeight,
             behavior: 'smooth'
         });
     }
@@ -1520,12 +1494,12 @@ function addUserMessage(text, isSelectedOption = false) {
         message.classList.add('selected-option');
     }
     message.textContent = text;
-    chatbotBodyDiv.appendChild(message);
+    window.chatbotBodyDiv.appendChild(message);
 
-    const isScrolledToBottom = chatbotBodyDiv.scrollHeight - chatbotBodyDiv.scrollTop - chatbotBodyDiv.clientHeight < 600;
+    const isScrolledToBottom = window.chatbotBodyDiv.scrollHeight - window.chatbotBodyDiv.scrollTop - window.chatbotBodyDiv.clientHeight < 600;
     if (isScrolledToBottom) {
-        chatbotBodyDiv.scrollTo({
-            top: chatbotBodyDiv.scrollHeight,
+        window.chatbotBodyDiv.scrollTo({
+            top: window.chatbotBodyDiv.scrollHeight,
             behavior: 'smooth'
         });
     }
@@ -1632,7 +1606,7 @@ function proceedToNextStep() {
 }
 
 function showFinalButtons() {
-    chatbotInputDiv.innerHTML = '';
+    window.chatbotInputDiv.innerHTML = '';
     const buttonsDiv = document.createElement('div');
     buttonsDiv.className = 'buttons';
 
@@ -1643,12 +1617,12 @@ function showFinalButtons() {
     startNewBtn.addEventListener('click', clearChat);
     buttonsDiv.appendChild(startNewBtn);
 
-    chatbotInputDiv.appendChild(buttonsDiv);
+    window.chatbotInputDiv.appendChild(buttonsDiv);
     buttonsDiv.querySelector('button')?.focus();
 }
 
 function showChatInput() {
-    chatbotInputDiv.innerHTML = '';
+    window.chatbotInputDiv.innerHTML = '';
 
     const inputWrapper = document.createElement('div');
     inputWrapper.className = 'input-wrapper';
@@ -1657,7 +1631,7 @@ function showChatInput() {
     input.type = 'text';
     input.placeholder = 'Ask about properties...';
     input.setAttribute('aria-label', 'Ask about properties');
-    input.classList.toggle('dark-mode', chatbotWindow.classList.contains('dark-mode'));
+    input.classList.toggle('dark-mode', window.chatbotWindow.classList.contains('dark-mode'));
 
     const submitArrow = document.createElement('span');
     submitArrow.className = 'submit-arrow';
@@ -1667,11 +1641,11 @@ function showChatInput() {
     inputWrapper.appendChild(input);
     inputWrapper.appendChild(submitArrow);
 
-    chatbotInputDiv.appendChild(inputWrapper);
+    window.chatbotInputDiv.appendChild(inputWrapper);
 
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
-    chatbotInputDiv.appendChild(errorDiv);
+    window.chatbotInputDiv.appendChild(errorDiv);
 
     input.addEventListener('keypress', async (e) => {
         if (e.key === 'Enter' && input.value.trim()) {
@@ -1694,7 +1668,7 @@ function showChatInput() {
             const response = await sendChatMessage(message);
             removeTypingIndicator();
             addBotMessage(response);
-        } 
+        }
     });
 
     const buttonsDiv = document.createElement('div');
@@ -1707,12 +1681,17 @@ function showChatInput() {
     startNewBtn.addEventListener('click', clearChat);
     buttonsDiv.appendChild(startNewBtn);
 
-    chatbotInputDiv.appendChild(buttonsDiv);
+    window.chatbotInputDiv.appendChild(buttonsDiv);
 
     input.focus();
 }
 
 async function submitToBackend() {
+    if (!window.SUBMIT_API_KEY) {
+        console.error('SUBMIT_API_KEY not loaded');
+        addBotMessage('Error: API key not available. Please try again later.');
+        return;
+    }
     try {
         const payload = {
             customerName: state.data.name,
@@ -1726,13 +1705,6 @@ async function submitToBackend() {
             userType: state.data.userType.toUpperCase()
         };
 
-        // Log request body prominently
-        console.log('===== REQUEST BODY SENT TO API =====');
-        console.log(JSON.stringify(payload, null, 2));
-        console.log('===================================');
-        console.log('State data:', state.data);
-
-        // Validate payload
         if (!state.data.cityId || !cityList.some(city => city.id === state.data.cityId)) {
             console.error('Invalid cityId:', state.data.cityId);
             addBotMessage('Error: Invalid city selected. Please choose a valid city.');
@@ -1740,15 +1712,10 @@ async function submitToBackend() {
             return;
         }
 
-        // Log request headers
         const headers = {
             'Content-Type': 'application/json',
-            'api_key': 'uAqGJ6bvNqcqsxh4TXMRHP596adeEMLVomMZywp1U0VHUeHLwHxv5jbe5Aw8=',
-            
+            'api_key': window.SUBMIT_API_KEY
         };
-        console.log('===== REQUEST HEADERS =====');
-        console.log(headers);
-        console.log('===========================');
 
         const response = await fetch('https://beatsdemo.squareyards.com/api/SecondaryPortal/ownerRegistration', {
             method: 'POST',
@@ -1758,23 +1725,17 @@ async function submitToBackend() {
             credentials: 'omit'
         });
 
-        console.log('API Response Status:', response.status);
-        console.log('API Response Headers:', Object.fromEntries(response.headers));
-
         let result;
         try {
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
                 result = await response.json();
-                console.log('API Response JSON:', result);
             } else {
                 result = await response.text();
-                console.log('API Response Text:', result);
             }
         } catch (jsonError) {
             console.error('JSON Parse Error:', jsonError.message);
             result = await response.text();
-            console.log('API Response Text (after JSON error):', result);
         }
 
         if (response.status === 200 && typeof result === 'object' && result.status === 1) {
@@ -1798,7 +1759,7 @@ async function submitToBackend() {
                 addBotMessage('Feel free to ask any questions about properties or real estate 🏠 in your city!');
                 setTimeout(() => {
                     showChatInput();
-                    chatbotInputDiv.querySelector('input')?.focus();
+                    window.chatbotInputDiv.querySelector('input')?.focus();
                 }, 300);
             }, 800);
         } else if (response.status === 403) {
@@ -1836,7 +1797,7 @@ async function submitToBackend() {
 }
 
 function showRestartButton() {
-    chatbotInputDiv.innerHTML = '';
+    window.chatbotInputDiv.innerHTML = '';
     const buttonsDiv = document.createElement('div');
     buttonsDiv.className = 'buttons';
     const restartBtn = document.createElement('button');
@@ -1845,7 +1806,7 @@ function showRestartButton() {
     restartBtn.setAttribute('aria-label', 'Restart listing');
     restartBtn.addEventListener('click', clearChat);
     buttonsDiv.appendChild(restartBtn);
-    chatbotInputDiv.appendChild(buttonsDiv);
+    window.chatbotInputDiv.appendChild(buttonsDiv);
     restartBtn.focus();
 }
 
@@ -1855,6 +1816,7 @@ function clearChat() {
         userType: '',
         listingType: '',
         city: '',
+        cityId: '',
         name: '',
         number: '',
         otp: '',
@@ -1870,26 +1832,25 @@ function clearChat() {
     state.isLeadSubmitted = false;
     clearReminderTimeout();
     clearInterval(state.timerInterval);
-    chatbotBodyDiv.innerHTML = '';
-    chatbotInputDiv.innerHTML = '';
+    window.chatbotBodyDiv.innerHTML = '';
+    window.chatbotInputDiv.innerHTML = '';
     startChat();
 }
 
 function initializePropertyListingChatbot() {
-    console.log('initializePropertyListingChatbot called');
     window.chatbotIcon.classList.add('closed');
     startPopupInterval();
 
     // Theme toggle event listener
-    // window.themeToggleBtn.addEventListener('click', () => {
-    //     const isDarkMode = window.chatbotWindow.classList.toggle('dark-mode');
-    //     window.chatbotBodyDiv.classList.toggle('dark-mode');
-    //     window.chatbotInputDiv.classList.toggle('dark-mode');
-    //     window.themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
-    //     document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
-    //         item.classList.toggle('dark-mode', isDarkMode);
-    //     });
-    // });
+    window.themeToggleBtn.addEventListener('click', () => {
+        const isDarkMode = window.chatbotWindow.classList.toggle('dark-mode');
+        window.chatbotBodyDiv.classList.toggle('dark-mode');
+        window.chatbotInputDiv.classList.toggle('dark-mode');
+        window.themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
+        document.querySelectorAll('.bot-message, .typing-indicator, .reminder-message, .final-message-container, .online-status, .online-dot, .input-wrapper input, .otp-input, .otp-timer').forEach(item => {
+            item.classList.toggle('dark-mode', isDarkMode);
+        });
+    });
 
     window.chatbotIcon.addEventListener('click', toggleChatbot);
     window.chatbotIcon.addEventListener('keydown', (e) => {

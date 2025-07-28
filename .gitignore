@@ -1,0 +1,8 @@
+# directories to ignore 
+venv**
+__pycache_**
+cpumon**
+test**
+.vscode
+.env
+.json
