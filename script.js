@@ -1532,12 +1532,30 @@ async function handleTextInput(value, field, validate, errorDiv) {
     state.data[field] = value;
 
     if (field === 'otp' && !state.bypassOtp) {
+        const errorSound = document.getElementById('errorSound');
         if (state.otpAttempts >= state.maxOtpAttempts) {
             errorDiv.textContent = 'Maximum OTP attempts reached. Please resend OTP.';
+            if (errorSound) {
+                errorSound.currentTime = 0;
+                errorSound.play().catch(error => console.error('Error sound playback failed:', error));
+            }
             return;
         }
         if (Date.now() - state.otpSentTime > state.otpValidDuration) {
             errorDiv.textContent = 'OTP has expired. Please resend OTP.';
+            if (errorSound) {
+                errorSound.currentTime = 0;
+                errorSound.play().catch(error => console.error('Error sound playback failed:', error));
+            }
+            return;
+        }
+        const error = validate ? validate(value) : '';
+        if (error) {
+            errorDiv.textContent = error;
+            if (errorSound) {
+                errorSound.currentTime = 0;
+                errorSound.play().catch(error => console.error('Error sound playback failed:', error));
+            }
             return;
         }
         state.otpAttempts++;
@@ -1546,12 +1564,20 @@ async function handleTextInput(value, field, validate, errorDiv) {
         removeTypingIndicator();
         if (!success) {
             errorDiv.textContent = `Invalid OTP. ${state.maxOtpAttempts - state.otpAttempts} attempts remaining.`;
+            if (errorSound) {
+                errorSound.currentTime = 0;
+                errorSound.play().catch(error => console.error('Error sound playback failed:', error));
+            }
             return;
         }
         addUserMessage('****');
-    } else if (field === 'otp' && state.bypassOtp) {
+    }
+    else if (field === 'otp' && state.bypassOtp) {
         // addUserMessage('****');
-    } else {
+
+    } 
+    
+    else {
         addUserMessage(value);
     }
 
