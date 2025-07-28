@@ -1,8 +1,42 @@
-# directories to ignore 
-venv**
-__pycache_**
-cpumon**
-test**
-.vscode
+# Node.js and npm
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Environment variables and sensitive data
 .env
-.json
+config.json
+*.key
+*.pem
+
+# Build and distribution files
+dist/
+build/
+*.min.js
+*.min.css
+
+# Temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Asset and media files (optional, uncomment if you want to exclude)
+# assets/
+# *.mp3
+# *.svg
+
+# Other
+coverage/
+*.bak
+*.cache
