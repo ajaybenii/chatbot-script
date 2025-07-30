@@ -1,4 +1,4 @@
-//console.log('script.js loaded successfully');
+// console.log('script.js loaded successfully');
 
 const steps = [
     {
@@ -61,16 +61,6 @@ const steps = [
         reminder: ' Are you still there? Please enter the OTP.'
     }
 ];
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Create DOM elements dynamically
-    createChatbotElements();
-
-    // Inject styles and initialize
-    injectChatbotStyles();
-    initializePropertyListingChatbot();
-    loadConfig();
-});
 
 // Function to create chatbot DOM elements
 function createChatbotElements() {
@@ -154,23 +144,7 @@ function createChatbotElements() {
     window.themeToggleBtn = themeToggleBtn;
 }
 
-// Rest of the script remains the same
-async function loadConfig() {
-    try {
-        const response = await fetch('/config');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const config = await response.json();
-        window.CITY_API_KEY = config.CITY_API_KEY;
-        window.SUBMIT_API_KEY = config.SUBMIT_API_KEY;
-    } catch (error) {
-        console.error('Failed to load API keys:', error);
-        addBotMessage('Error loading configuration. Please ensure the server is running and try again later.');
-        setTimeout(loadConfig, 5000);
-    }
-}
-
+// Inject styles (unchanged)
 function injectChatbotStyles() {
     const css = `
         /* Reset and Base Styles */
@@ -1571,13 +1545,9 @@ async function handleTextInput(value, field, validate, errorDiv) {
             return;
         }
         addUserMessage('****');
-    }
-    else if (field === 'otp' && state.bypassOtp) {
+    } else if (field === 'otp' && state.bypassOtp) {
         // addUserMessage('****');
-
-    } 
-    
-    else {
+    } else {
         addUserMessage(value);
     }
 
@@ -1863,6 +1833,22 @@ function clearChat() {
     startChat();
 }
 
+async function loadConfig() {
+    try {
+        const response = await fetch('/config');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const config = await response.json();
+        window.CITY_API_KEY = config.CITY_API_KEY;
+        window.SUBMIT_API_KEY = config.SUBMIT_API_KEY;
+    } catch (error) {
+        console.error('Failed to load API keys:', error);
+        addBotMessage('Error loading configuration. Please ensure the server is running and try again later.');
+        setTimeout(loadConfig, 5000);
+    }
+}
+
 function initializePropertyListingChatbot() {
     window.chatbotIcon.classList.add('closed');
     startPopupInterval();
@@ -1894,5 +1880,8 @@ function initializePropertyListingChatbot() {
     });
 }
 
-// export { initializePropertyListingChatbot };
-window.initializePropertyListingChatbot = initializePropertyListingChatbot;
+// Initialize the chatbot automatically
+createChatbotElements();
+injectChatbotStyles();
+initializePropertyListingChatbot();
+loadConfig();
