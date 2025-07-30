@@ -1894,5 +1894,5 @@ function initializePropertyListingChatbot() {
     });
 }
 
-export { initializePropertyListingChatbot };
+// export { initializePropertyListingChatbot };
 window.initializePropertyListingChatbot = initializePropertyListingChatbot;
