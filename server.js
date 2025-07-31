@@ -29,13 +29,13 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK' });
 });
 
-// Config endpoint to serve API keys
-app.get('/config', (req, res) => {
-    res.json({
-        CITY_API_KEY: process.env.CITY_API_KEY || 'default_city_key', // Fallback for safety
-        SUBMIT_API_KEY: process.env.SUBMIT_API_KEY || 'default_submit_key' // Fallback for safety
-    });
-});
+// // Config endpoint to serve API keys
+// app.get('/config', (req, res) => {
+//     res.json({
+//         CITY_API_KEY: process.env.CITY_API_KEY || 'default_city_key', // Fallback for safety
+//         SUBMIT_API_KEY: process.env.SUBMIT_API_KEY || 'default_submit_key' // Fallback for safety
+//     });
+// });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -1,4 +1,3 @@
-const Dotenv = require('dotenv-webpack');
 const path = require('path');
 
 module.exports = {
@@ -7,11 +6,5 @@ module.exports = {
         filename: 'script.js', // Output file
         path: path.resolve(__dirname), // Output to root directory
     },
-    mode: 'production', // Minifies and optimizes the output
-    plugins: [
-        new Dotenv({
-            path: './.env', // Path to .env file
-            systemvars: true, // Load system environment variables if present
-        }),
-    ],
+    mode: 'production' // Minifies and optimizes the output
 };
