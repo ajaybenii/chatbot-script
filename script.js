@@ -1878,6 +1878,17 @@ function initializePropertyListingChatbot() {
             toggleChatbot();
         }
     });
+    
+    // Event listeners for elements with class open-post-property-chat-bot
+    document.querySelectorAll('.open-post-property-chat-bot').forEach(element => {
+        element.addEventListener('click', toggleChatbot);
+        element.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleChatbot();
+            }
+        });
+    });
 }
 
 // Initialize the chatbot automatically
