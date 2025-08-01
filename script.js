@@ -2028,8 +2028,13 @@ function clearChat() {
 // }
 
 function initializePropertyListingChatbot() {
+    // Ensure chatbot starts closed
+    window.chatbotWindow.style.display = 'none';
+    window.chatbotWindow.classList.remove('open');
     window.chatbotIcon.classList.add('closed');
+    window.chatbotIcon.classList.remove('open');
     startPopupInterval();
+
 
     // Theme toggle event listener
     window.themeToggleBtn.addEventListener('click', () => {
@@ -2069,11 +2074,6 @@ function initializePropertyListingChatbot() {
     });
 }
 
-// Initialize the chatbot automatically
-// createChatbotElements();
-// injectChatbotStyles();
-// initializePropertyListingChatbot();
-// loadConfig();
 
 async function initializeChatbot() {
     createChatbotElements();
