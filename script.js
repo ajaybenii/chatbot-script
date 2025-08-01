@@ -282,9 +282,9 @@ function injectChatbotStyles() {
         }
         @media (max-width: 600px) {
             #chatbot-window {
-                width: 60%;
-                height: 60%;
-                bottom: 80;
+                width: 100%;
+                height: 100%;
+                bottom: 0;
                 right: 0;
                 border-radius: 0;
             }
@@ -834,7 +834,7 @@ function injectChatbotStyles() {
             background-color: #7be0b6;
         }
 
-        
+
     `;
     const styleElement = document.createElement('style');
     styleElement.type = 'text/css';
