@@ -91,7 +91,7 @@ function createChatbotElements() {
     const figure = document.createElement('figure');
     const botIcon = document.createElement('img');
     botIcon.className = 'img-responsive';
-    botIcon.src = 'bot-icon-white.svg';
+    botIcon.src = 'https://property-chatbot.squareyards.com/assets/images/bot-icon-white.svg';
     botIcon.alt = 'SquareYards bot icon';
     figure.appendChild(botIcon);
     chatbotHeader.appendChild(figure);
@@ -127,12 +127,12 @@ function createChatbotElements() {
     // Create audio elements
     const chatSound = document.createElement('audio');
     chatSound.id = 'chatSound';
-    chatSound.src = 'assets/audio/chatbot-sound.mp3';
+    chatSound.src = 'https://property-chatbot.squareyards.com/assets/audio/chatbot-sound.mp3';
     document.body.appendChild(chatSound);
 
     const errorSound = document.createElement('audio');
     errorSound.id = 'errorSound';
-    errorSound.src = 'assets/audio/error.mp3';
+    errorSound.src = 'ttps://property-chatbot.squareyards.com/assets/audio/error.mp3';
     document.body.appendChild(errorSound);
 
     // Assign to global variables
@@ -1924,7 +1924,7 @@ async function submitToBackend() {
                         <span>Agent Online</span>
                     </div>
                     <div class="final-message-container">
-                        <img src="bot-icon-white.svg" alt="Agent" class="agent-image">
+                        <img src="https://property-chatbot.squareyards.com/assets/images/bot-icon-white.svg" alt="Agent" class="agent-image">
                         <div class="final-message-text">
                             📞 Our expert will call you soon to list your property in ${state.data.city} 🏠 – get started with SquareYards today! 🚀
                         </div>
