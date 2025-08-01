@@ -132,7 +132,7 @@ function createChatbotElements() {
 
     const errorSound = document.createElement('audio');
     errorSound.id = 'errorSound';
-    errorSound.src = 'ttps://property-chatbot.squareyards.com/assets/audio/error.mp3';
+    errorSound.src = 'https://property-chatbot.squareyards.com/assets/audio/error.mp3';
     document.body.appendChild(errorSound);
 
     // Assign to global variables
@@ -252,13 +252,7 @@ function injectChatbotStyles() {
             outline: 2px solid #fff;
             outline-offset: 2px;
         }
-        @media (max-width: 600px) {
-            .chatbot-popup {
-                right: 10px;
-                font-size: 11px;
-                padding: 8px 12px;
-            }
-        }
+        
 
         /* Chatbot Window */
         #chatbot-window {
@@ -280,15 +274,7 @@ function injectChatbotStyles() {
             background: linear-gradient(145deg, #2a2a2a, #333);
             color: #fff;
         }
-        @media (max-width: 600px) {
-            #chatbot-window {
-                width: 100%;
-                height: 100%;
-                bottom: 0;
-                right: 0;
-                border-radius: 0;
-            }
-        }
+        
 
         /* Chatbot Header */
         .chatbot-header {
@@ -481,11 +467,7 @@ function injectChatbotStyles() {
         @keyframes fadeIn {
             to { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 600px) {
-            .message { font-size: 12px; }
-            .typing-indicator { padding: 8px; gap: 6px; }
-            .typing-indicator .dot { width: 8px; height: 8px; }
-        }
+        
 
         /* Chatbot Input */
         .chatbot-input {
@@ -561,14 +543,7 @@ function injectChatbotStyles() {
             color: #7be0b6;
             font-style: italic;
         }
-        @media (max-width: 600px) {
-            .input-wrapper input {
-                font-size: 12px;
-            }
-            .input-wrapper input:focus::after {
-                font-size: 9px;
-            }
-        }
+        
 
         /* OTP Input */
         .otp-container {
@@ -654,12 +629,7 @@ function injectChatbotStyles() {
         .otp-timer.dark-mode {
             color: #fff;
         }
-        @media (max-width: 600px) {
-            .otp-resend button {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-        }
+        
 
         /* Autocomplete Dropdown */
         .autocomplete-dropdown {
@@ -769,14 +739,7 @@ function injectChatbotStyles() {
         .chatbot-input .clear-chat-btn:focus {
             outline: 2px solid #7be0b6;
         }
-        @media (max-width: 600px) {
-            .chatbot-input button {
-                font-size: 12px;
-            }
-            .chatbot-input .clear-chat-btn {
-                font-size: 12px;
-            }
-        }
+        
 
         /* Final Message Container */
         .final-message-container {
@@ -795,11 +758,7 @@ function injectChatbotStyles() {
             border-color: #4b6f7d;
             color: #fff;
         }
-        @media (max-width: 600px) {
-            .final-message-container {
-                font-size: 12px;
-            }
-        }
+    
         .final-message-container img.agent-image {
             width: 40px;
             height: 40px;
@@ -818,11 +777,7 @@ function injectChatbotStyles() {
         .online-status.dark-mode {
             color: #7be0b6;
         }
-        @media (max-width: 600px) {
-            .online-status {
-                font-size: 10px;
-            }
-        }
+        
         .online-dot {
             width: 10px;
             height: 10px;
