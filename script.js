@@ -252,7 +252,13 @@ function injectChatbotStyles() {
             outline: 2px solid #fff;
             outline-offset: 2px;
         }
-        
+        @media (max-width: 600px) {
+            .chatbot-popup {
+                right: 10px;
+                font-size: 11px;
+                padding: 8px 12px;
+            }
+        }
 
         /* Chatbot Window */
         #chatbot-window {
@@ -274,7 +280,15 @@ function injectChatbotStyles() {
             background: linear-gradient(145deg, #2a2a2a, #333);
             color: #fff;
         }
-        
+        @media (max-width: 600px) {
+            #chatbot-window {
+                width: 100%;
+                height: 100%;
+                bottom: 0;
+                right: 0;
+                border-radius: 0;
+            }
+        }
 
         /* Chatbot Header */
         .chatbot-header {
@@ -467,7 +481,11 @@ function injectChatbotStyles() {
         @keyframes fadeIn {
             to { opacity: 1; transform: translateY(0); }
         }
-        
+        @media (max-width: 600px) {
+            .message { font-size: 12px; }
+            .typing-indicator { padding: 8px; gap: 6px; }
+            .typing-indicator .dot { width: 8px; height: 8px; }
+        }
 
         /* Chatbot Input */
         .chatbot-input {
@@ -543,7 +561,14 @@ function injectChatbotStyles() {
             color: #7be0b6;
             font-style: italic;
         }
-        
+        @media (max-width: 600px) {
+            .input-wrapper input {
+                font-size: 12px;
+            }
+            .input-wrapper input:focus::after {
+                font-size: 9px;
+            }
+        }
 
         /* OTP Input */
         .otp-container {
@@ -629,7 +654,12 @@ function injectChatbotStyles() {
         .otp-timer.dark-mode {
             color: #fff;
         }
-        
+        @media (max-width: 600px) {
+            .otp-resend button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
 
         /* Autocomplete Dropdown */
         .autocomplete-dropdown {
@@ -739,7 +769,14 @@ function injectChatbotStyles() {
         .chatbot-input .clear-chat-btn:focus {
             outline: 2px solid #7be0b6;
         }
-        
+        @media (max-width: 600px) {
+            .chatbot-input button {
+                font-size: 12px;
+            }
+            .chatbot-input .clear-chat-btn {
+                font-size: 12px;
+            }
+        }
 
         /* Final Message Container */
         .final-message-container {
@@ -758,7 +795,11 @@ function injectChatbotStyles() {
             border-color: #4b6f7d;
             color: #fff;
         }
-    
+        @media (max-width: 600px) {
+            .final-message-container {
+                font-size: 12px;
+            }
+        }
         .final-message-container img.agent-image {
             width: 40px;
             height: 40px;
@@ -777,7 +818,11 @@ function injectChatbotStyles() {
         .online-status.dark-mode {
             color: #7be0b6;
         }
-        
+        @media (max-width: 600px) {
+            .online-status {
+                font-size: 10px;
+            }
+        }
         .online-dot {
             width: 10px;
             height: 10px;
@@ -787,184 +832,6 @@ function injectChatbotStyles() {
         }
         .online-dot.dark-mode {
             background-color: #7be0b6;
-        }
-
-        /* Mobile View Enhancements */
-        @media (max-width: 600px) {
-            /* Chatbot Icon */
-            #chatbot-icon {
-                width: 50px;
-                height: 50px;
-                bottom: 15px;
-                right: 15px;
-                font-size: 20px;
-            }
-
-            /* Chatbot Popup */
-            .chatbot-popup {
-                right: 15px;
-                bottom: 80px;
-                font-size: 12px;
-                padding: 10px 15px;
-                max-width: 200px;
-            }
-            .chatbot-popup::after {
-                right: 15px;
-            }
-
-            /* Chatbot Window */
-            #chatbot-window {
-                width: 100%;
-                height: 100%;
-                bottom: 0;
-                right: 0;
-                border-radius: 0;
-                display: flex;
-                flex-direction: column;
-            }
-
-            /* Chatbot Header */
-            .chatbot-header {
-                height: 60px;
-                padding: 10px 15px;
-                gap: 8px;
-            }
-            .chatbot-header .company-profile p {
-                font-size: 14px;
-                max-width: 150px;
-            }
-            .chatbot-header .company-profile span {
-                font-size: 12px;
-            }
-            .theme-toggle {
-                font-size: 18px;
-                top: 5px;
-                right: 5px;
-            }
-
-            /* Chatbot Body */
-            .chatbot-body {
-                max-height: calc(100% - 120px); /* Adjust for header and input */
-                padding: 10px;
-                -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-            }
-            .chatbot-body::-webkit-scrollbar {
-                width: 6px;
-            }
-
-            /* Messages */
-            .message {
-                font-size: 13px;
-                margin: 8px 0;
-                max-width: 85%;
-            }
-            .bot-message {
-                padding: 12px 15px;
-            }
-            .user-message {
-                padding: 8px 10px;
-            }
-            .reminder-message {
-                padding: 12px 15px;
-                font-size: 12px;
-            }
-            .typing-indicator {
-                padding: 10px;
-                gap: 5px;
-            }
-            .typing-indicator .dot {
-                width: 8px;
-                height: 8px;
-            }
-
-            /* Chatbot Input */
-            .chatbot-input {
-                padding: 15px;
-            }
-            .input-wrapper input {
-                font-size: 14px;
-                padding: 10px 45px 10px 12px;
-                height: 44px; /* Minimum touch target size */
-            }
-            .input-wrapper .submit-arrow {
-                width: 36px;
-                height: 36px;
-                font-size: 20px;
-                right: 4px;
-            }
-            .input-wrapper input:focus::after {
-                font-size: 10px;
-                right: 50px;
-            }
-            .error-message {
-                font-size: 12px;
-            }
-
-            /* OTP Input */
-            .otp-container {
-                gap: 10px;
-            }
-            .otp-input {
-                width: 44px;
-                height: 44px;
-                font-size: 16px;
-            }
-            .otp-resend {
-                gap: 15px;
-                margin-top: 10px;
-            }
-            .otp-resend button {
-                padding: 8px 15px;
-                font-size: 13px;
-                min-width: 100px;
-            }
-            .otp-timer {
-                font-size: 13px;
-            }
-
-            /* Autocomplete Dropdown */
-            .autocomplete-dropdown {
-                max-height: 120px;
-            }
-            .autocomplete-dropdown .autocomplete-item {
-                font-size: 13px;
-                padding: 10px 12px;
-            }
-
-            /* Buttons */
-            .chatbot-input .buttons {
-                gap: 8px;
-                flex-wrap: wrap;
-            }
-            .chatbot-input button {
-                font-size: 13px;
-                padding: 10px;
-                min-height: 44px;
-            }
-            .chatbot-input .clear-chat-btn {
-                font-size: 13px;
-                padding: 10px;
-                min-height: 44px;
-            }
-
-            /* Final Message */
-            .final-message-container {
-                font-size: 13px;
-                padding: 8px;
-            }
-            .final-message-container img.agent-image {
-                width: 36px;
-                height: 36px;
-            }
-
-            /* Online Status */
-            .online-status {
-                font-size: 12px;
-            }
-            .online-dot {
-                width: 8px;
-                height: 8px;
-            }
         }
     `;
     const styleElement = document.createElement('style');
