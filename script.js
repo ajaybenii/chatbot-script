@@ -282,10 +282,10 @@ function injectChatbotStyles() {
         }
         @media (max-width: 600px) {
             #chatbot-window {
-                width: 100%;
-                height: 100%;
-                bottom: 0;
-                right: 0;
+                width: 83%;
+                height: 50%;
+                bottom: 90px;
+                right: 14px;
                 border-radius: 0;
             }
         }
